@@ -13,21 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency.ingredient;
+package com.github.javydreamercsw.concurrency;
 
-import com.github.javydreamercsw.concurrency.AbstractIngredient;
-import com.github.javydreamercsw.concurrency.UNIT;
+import com.github.javydreamercsw.concurrency.staff.Cook;
 
 /**
+ * This represents a scenario for the different chapters in the book.
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public class Egg_White extends AbstractIngredient
+public interface Scenario
 {
 
-    @Override
-    public UNIT getUnits()
-    {
-        return UNIT.EACH;
-    }
+    /**
+     * Scenario name.
+     *
+     * @return name
+     */
+    String getName();
+
+    /**
+     * Get chapter this scenario is for.
+     *
+     * @return chapter number
+     */
+    int getChapter();
+
+    /**
+     * Run the scenario.
+     */
+    void cook();
+
+    /**
+     * Set the recipe for this scenario.
+     *
+     * @param r recipe
+     */
+    void setRecipe(Recipe r);
+
+    /**
+     * Add cook to scenario.
+     *
+     * @param chef cook to add.
+     */
+    public void addCook(Cook chef);
 }

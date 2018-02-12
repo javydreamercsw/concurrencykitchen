@@ -15,7 +15,10 @@
  */
 package com.github.javydreamercsw.concurrency.ingredient.processed;
 
+import org.openide.util.lookup.ServiceProvider;
+
 import com.github.javydreamercsw.concurrency.AbstractProcessedIngredient;
+import com.github.javydreamercsw.concurrency.ProcessedIngredient;
 import com.github.javydreamercsw.concurrency.Recipe;
 import com.github.javydreamercsw.concurrency.UNIT;
 import com.github.javydreamercsw.concurrency.recipe.Cream_Cheese_Filling_Recipe;
@@ -24,6 +27,7 @@ import com.github.javydreamercsw.concurrency.recipe.Cream_Cheese_Filling_Recipe;
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
+@ServiceProvider(service = ProcessedIngredient.class)
 public class Cream_Cheese_Filling extends AbstractProcessedIngredient
 {
 

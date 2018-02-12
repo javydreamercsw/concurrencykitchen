@@ -29,4 +29,9 @@ public abstract class AbstractIngredient implements Ingredient
         return getClass().getSimpleName().replaceAll("_", " ");
     }
 
+    @Override
+    public boolean requiresRefrigeration()
+    {
+        return false;
+    }
 }

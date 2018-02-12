@@ -15,6 +15,12 @@
  */
 package com.github.javydreamercsw.concurrency;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
+import java.util.TreeMap;
+import java.util.logging.Logger;
+
 import org.openide.util.Lookup;
 
 /**
@@ -23,6 +29,8 @@ import org.openide.util.Lookup;
  */
 public class Main
 {
+
+    private final static Logger LOG = Logger.getLogger(Main.class.getName());
 
     /**
      * @param args the command line arguments
@@ -34,11 +42,70 @@ public class Main
 
         } else
         {
-            System.out.println("Available recipes:");
-            Lookup.getDefault().lookupAll(Recipe.class).forEach(r ->
+            TreeMap<Integer, List<Scenario>> options = new TreeMap<>();
+            Lookup.getDefault().lookupAll(Scenario.class).forEach(s ->
             {
-                System.out.println(r.toString());
+                if (options.containsKey(s.getChapter()))
+                {
+                    options.get(s.getChapter()).add(s);
+                } else
+                {
+                    options.put(s.getChapter(), Arrays.asList(s));
+                }
             });
+
+            while (true)
+            {
+                System.out.println("Available Chapters:");
+                options.entrySet().forEach((entry) ->
+                {
+                    System.out.println("\t" + entry.getKey() + ") Chapter "
+                            + entry.getKey() + ": "
+                            + entry.getValue().size() + " scenario(s)");
+                });
+
+                System.out.println("\tq) quit");
+
+                Scanner scanner = new Scanner(System.in);
+                String selection = scanner.next().trim().toLowerCase();
+                if (selection.equals("q"))
+                {
+                    System.out.println("Exiting");
+                    System.exit(0);
+                } else
+                {
+                    OUTER:
+                    while (true)
+                    {
+                        int count = 1;
+                        System.out.println("Select a scenario:");
+                        List<Scenario> group = options.get(Integer.valueOf(selection));
+                        for (Scenario s : group)
+                        {
+                            System.out.println("\t" + count + ") " + s.getName());
+                            count++;
+                        }
+                        System.out.println("\tb) back");
+                        System.out.println("\tq) quit");
+                        selection = scanner.next().trim().toLowerCase();
+                        switch (selection)
+                        {
+                            case "b":
+                                break OUTER;
+                            case "q":
+                                System.out.println("Exiting");
+                                System.exit(0);
+                            default:
+                                Integer option = Integer.valueOf(selection);
+                                System.out.println("Selected " + option);
+                                {
+                                    group.get(option - 1).cook();
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
         }
     }
 

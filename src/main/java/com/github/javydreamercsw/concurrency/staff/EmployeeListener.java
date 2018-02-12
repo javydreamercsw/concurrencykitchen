@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency.ingredient;
-
-import com.github.javydreamercsw.concurrency.AbstractIngredient;
-import com.github.javydreamercsw.concurrency.UNIT;
+package com.github.javydreamercsw.concurrency.staff;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public class Vanilla extends AbstractIngredient
+public interface EmployeeListener
 {
 
-    @Override
-    public UNIT getUnits()
-    {
-        return UNIT.TEASPOON;
-    }
+    void taskDone();
 }

@@ -13,33 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency.ingredient.processed;
-
-import org.openide.util.lookup.ServiceProvider;
-
-import com.github.javydreamercsw.concurrency.AbstractProcessedIngredient;
-import com.github.javydreamercsw.concurrency.ProcessedIngredient;
-import com.github.javydreamercsw.concurrency.Recipe;
-import com.github.javydreamercsw.concurrency.UNIT;
-import com.github.javydreamercsw.concurrency.recipe.Cake_Recipe;
+package com.github.javydreamercsw.concurrency;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-@ServiceProvider(service = ProcessedIngredient.class)
-public class Cake extends AbstractProcessedIngredient
+public class NotEnoughIngredientException extends Exception
 {
 
-    @Override
-    public Recipe getRecipe()
+    public NotEnoughIngredientException(Ingredient i)
     {
-        return new Cake_Recipe();
-    }
-
-    @Override
-    public UNIT getUnits()
-    {
-        return UNIT.EACH;
+        super("Not enough " + i.getName() + "!");
     }
 }

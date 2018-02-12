@@ -23,44 +23,33 @@ import com.github.javydreamercsw.concurrency.AbstractRecipe;
 import com.github.javydreamercsw.concurrency.Recipe;
 import com.github.javydreamercsw.concurrency.RecipeStep;
 import com.github.javydreamercsw.concurrency.equipment.Bowl;
-import com.github.javydreamercsw.concurrency.ingredient.Butter_Emulsion;
-import com.github.javydreamercsw.concurrency.ingredient.Confectioner_Sugar;
-import com.github.javydreamercsw.concurrency.ingredient.Sea_Salt;
-import com.github.javydreamercsw.concurrency.ingredient.Shortening;
-import com.github.javydreamercsw.concurrency.ingredient.Vanilla_Extract;
-import com.github.javydreamercsw.concurrency.ingredient.processed.Vanilla_Buttercream_Icing;
+import com.github.javydreamercsw.concurrency.ingredient.Egg;
+import com.github.javydreamercsw.concurrency.ingredient.processed.Egg_White;
+import com.github.javydreamercsw.concurrency.ingredient.processed.Egg_Yolk;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
 @ServiceProvider(service = Recipe.class)
-public class Vanilla_Buttercream_Icing_Recipe extends AbstractRecipe
+public class Separated_Egg_Recipe extends AbstractRecipe
 {
 
-    public Vanilla_Buttercream_Icing_Recipe()
+    public Separated_Egg_Recipe()
     {
         //Ingredients
-        getIngredients().put(Shortening.class, 2.5f);
-        getIngredients().put(Confectioner_Sugar.class, 5f);
-        getIngredients().put(Sea_Salt.class, 0.5f);
-        getIngredients().put(Vanilla_Extract.class, 0.5f);
-        getIngredients().put(Butter_Emulsion.class, 1f);
+        getIngredients().put(Egg.class, 1f);
 
         //Output
-        getResultingIngredients().put(Vanilla_Buttercream_Icing.class, 1f);
+        getResultingIngredients().put(Egg_White.class, 1f);
+        getResultingIngredients().put(Egg_Yolk.class, 1f);
 
         //Steps
         getSteps().add(new RecipeStep(getIngredients(),
                 Arrays.asList(Bowl.class), null,
-                "In the bowl of an electric mixer fitted with the paddle "
-                + "attachment, cream the shortening until smooth.",
-                5000 * 60l));
-        getSteps().add(new RecipeStep(getIngredients(),
-                null, null,
-                "Add the confectioners' sugar, sea salt, vanilla and butter emulsion."));
+                "In a bowl crack the egg open."));
         getSteps().add(new RecipeStep(getIngredients(),
                 null, getResultingIngredients(),
-                "Mix it all on medium speed for 8 to 10 minutes.", 10000 * 60l));
+                "Slowly separate the yolk from the white."));
     }
 }

@@ -29,7 +29,7 @@ import com.github.javydreamercsw.concurrency.ingredient.Confectioner_Sugar;
 import com.github.javydreamercsw.concurrency.ingredient.Corn_Syrup;
 import com.github.javydreamercsw.concurrency.ingredient.Food_Coloring_Pink;
 import com.github.javydreamercsw.concurrency.ingredient.Liquid_Whitener_for_Icing;
-import com.github.javydreamercsw.concurrency.ingredient.Vanilla;
+import com.github.javydreamercsw.concurrency.ingredient.Vanilla_Extract;
 import com.github.javydreamercsw.concurrency.ingredient.Water;
 import com.github.javydreamercsw.concurrency.ingredient.processed.Pink_Poured_Fondant;
 
@@ -48,7 +48,7 @@ public class Pink_Poured_Fondant_Recipe extends AbstractRecipe
         getIngredients().put(Water.class, 8f);
         getIngredients().put(Corn_Syrup.class, 5f);
         getIngredients().put(Almond_Extract.class, 1f);
-        getIngredients().put(Vanilla.class, 1f);
+        getIngredients().put(Vanilla_Extract.class, 1f);
         getIngredients().put(Liquid_Whitener_for_Icing.class, 2f);
         getIngredients().put(Food_Coloring_Pink.class, 0.5f);
 

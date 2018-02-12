@@ -13,33 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency.ingredient.processed;
+package com.github.javydreamercsw.concurrency.ingredient;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import com.github.javydreamercsw.concurrency.AbstractProcessedIngredient;
-import com.github.javydreamercsw.concurrency.ProcessedIngredient;
-import com.github.javydreamercsw.concurrency.Recipe;
+import com.github.javydreamercsw.concurrency.AbstractIngredient;
+import com.github.javydreamercsw.concurrency.Ingredient;
 import com.github.javydreamercsw.concurrency.UNIT;
-import com.github.javydreamercsw.concurrency.recipe.Cake_Recipe;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-@ServiceProvider(service = ProcessedIngredient.class)
-public class Cake extends AbstractProcessedIngredient
+@ServiceProvider(service = Ingredient.class)
+public class Vanilla_Extract extends AbstractIngredient
 {
-
-    @Override
-    public Recipe getRecipe()
-    {
-        return new Cake_Recipe();
-    }
 
     @Override
     public UNIT getUnits()
     {
-        return UNIT.EACH;
+        return UNIT.TEASPOON;
     }
 }

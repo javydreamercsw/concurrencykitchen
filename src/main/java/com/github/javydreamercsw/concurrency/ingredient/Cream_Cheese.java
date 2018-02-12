@@ -15,13 +15,17 @@
  */
 package com.github.javydreamercsw.concurrency.ingredient;
 
+import org.openide.util.lookup.ServiceProvider;
+
 import com.github.javydreamercsw.concurrency.AbstractIngredient;
+import com.github.javydreamercsw.concurrency.Ingredient;
 import com.github.javydreamercsw.concurrency.UNIT;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
+@ServiceProvider(service = Ingredient.class)
 public class Cream_Cheese extends AbstractIngredient
 {
 
@@ -31,4 +35,9 @@ public class Cream_Cheese extends AbstractIngredient
         return UNIT.POUND;
     }
 
+    @Override
+    public boolean requiresRefrigeration()
+    {
+        return true;
+    }
 }

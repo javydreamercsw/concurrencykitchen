@@ -28,7 +28,7 @@ import com.github.javydreamercsw.concurrency.ingredient.Confectioner_Sugar;
 import com.github.javydreamercsw.concurrency.ingredient.Cream_Cheese;
 import com.github.javydreamercsw.concurrency.ingredient.Sea_Salt;
 import com.github.javydreamercsw.concurrency.ingredient.Shortening;
-import com.github.javydreamercsw.concurrency.ingredient.Vanilla;
+import com.github.javydreamercsw.concurrency.ingredient.Vanilla_Extract;
 import com.github.javydreamercsw.concurrency.ingredient.processed.Cream_Cheese_Filling;
 
 /**
@@ -46,7 +46,7 @@ public class Cream_Cheese_Filling_Recipe extends AbstractRecipe
         getIngredients().put(Cream_Cheese.class, 1f);
         getIngredients().put(Confectioner_Sugar.class, 5f);
         getIngredients().put(Sea_Salt.class, 0.5f);
-        getIngredients().put(Vanilla.class, 1f);
+        getIngredients().put(Vanilla_Extract.class, 1f);
         getIngredients().put(Butter_Emulsion.class, 1f);
 
         //Output

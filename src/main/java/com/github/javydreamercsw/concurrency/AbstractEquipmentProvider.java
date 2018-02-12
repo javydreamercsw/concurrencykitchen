@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Javier Ortiz Bultron <javierortiz@pingidentity.com>.
+ * Copyright 2018 Javier A. Ortiz Bultron <javierortiz@pingidentity.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency.ingredient;
+package com.github.javydreamercsw.concurrency;
 
-import org.openide.util.lookup.ServiceProvider;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.github.javydreamercsw.concurrency.AbstractIngredient;
-import com.github.javydreamercsw.concurrency.Ingredient;
-import com.github.javydreamercsw.concurrency.UNIT;
-
-/**
- *
- * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
- */
-@ServiceProvider(service = Ingredient.class)
-public class Liquid_Whitener_for_Icing extends AbstractIngredient
+public abstract class AbstractEquipmentProvider implements EquipmentProvider
 {
 
-    @Override
-    public UNIT getUnits()
+    private final Map<Class<? extends Equipment>, Integer> storage = new HashMap<>();
+
+    public AbstractEquipmentProvider()
     {
-        return UNIT.TEASPOON;
+    }
+
+    @Override
+    public String getName()
+    {
+        return getClass().getSimpleName().replaceAll("_", " ");
     }
 }

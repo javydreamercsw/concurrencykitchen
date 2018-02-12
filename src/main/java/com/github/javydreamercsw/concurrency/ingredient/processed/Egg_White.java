@@ -21,25 +21,25 @@ import com.github.javydreamercsw.concurrency.AbstractProcessedIngredient;
 import com.github.javydreamercsw.concurrency.ProcessedIngredient;
 import com.github.javydreamercsw.concurrency.Recipe;
 import com.github.javydreamercsw.concurrency.UNIT;
-import com.github.javydreamercsw.concurrency.recipe.Cake_Recipe;
+import com.github.javydreamercsw.concurrency.recipe.Separated_Egg_Recipe;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
 @ServiceProvider(service = ProcessedIngredient.class)
-public class Cake extends AbstractProcessedIngredient
+public class Egg_White extends AbstractProcessedIngredient
 {
-
-    @Override
-    public Recipe getRecipe()
-    {
-        return new Cake_Recipe();
-    }
 
     @Override
     public UNIT getUnits()
     {
         return UNIT.EACH;
+    }
+
+    @Override
+    public Recipe getRecipe()
+    {
+        return new Separated_Egg_Recipe();
     }
 }

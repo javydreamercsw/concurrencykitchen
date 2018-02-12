@@ -13,33 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency.ingredient.processed;
+package com.github.javydreamercsw.concurrency;
 
-import org.openide.util.lookup.ServiceProvider;
+import java.util.logging.Logger;
 
-import com.github.javydreamercsw.concurrency.AbstractProcessedIngredient;
-import com.github.javydreamercsw.concurrency.ProcessedIngredient;
-import com.github.javydreamercsw.concurrency.Recipe;
-import com.github.javydreamercsw.concurrency.UNIT;
-import com.github.javydreamercsw.concurrency.recipe.Cake_Recipe;
+import com.github.javydreamercsw.concurrency.staff.Cook;
+import com.github.javydreamercsw.concurrency.staff.SousChef;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-@ServiceProvider(service = ProcessedIngredient.class)
-public class Cake extends AbstractProcessedIngredient
+public abstract class AbstractScenario implements Scenario
 {
 
+    private static final Logger LOG
+            = Logger.getLogger(AbstractScenario.class.getName());
+    private SousChef chef = new SousChef("Pablo");
+    private Recipe recipe;
+
     @Override
-    public Recipe getRecipe()
+    public final void setRecipe(Recipe r)
     {
-        return new Cake_Recipe();
+        this.recipe = r;
     }
 
     @Override
-    public UNIT getUnits()
+    public void cook()
     {
-        return UNIT.EACH;
+        chef.addRecipe(recipe);
+        chef.cook();
+    }
+
+    @Override
+    public final synchronized void addCook(Cook cook)
+    {
+        if (chef != null)
+        {
+            chef.addStaff(cook);
+        }
     }
 }

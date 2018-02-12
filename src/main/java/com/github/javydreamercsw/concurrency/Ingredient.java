@@ -36,4 +36,11 @@ public interface Ingredient
      * @return units
      */
     UNIT getUnits();
+
+    /**
+     * If ingredient needs to be refrigerated.
+     *
+     * @return true if requires refrigeration, false otherwise.
+     */
+    boolean requiresRefrigeration();
 }

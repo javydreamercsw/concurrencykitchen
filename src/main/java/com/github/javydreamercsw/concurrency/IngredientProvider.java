@@ -15,7 +15,7 @@
  */
 package com.github.javydreamercsw.concurrency;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * This interface are for object that provide ingredients like a pantry or
@@ -38,8 +38,29 @@ public interface IngredientProvider
      *
      * @param clazz Type of ingredient
      * @param amount Amount requested
-     * @return A list of the requested ingredients. Might be less than requested
-     * if there's no more available.
+     * @return the amount available in this storage
      */
-    List<Ingredient> getIngredient(Class<? extends Ingredient> clazz, int amount);
+    float getIngredient(Class<? extends Ingredient> clazz, float amount);
+
+    /**
+     * Get a map with ingredients and amounts of each one available.
+     *
+     * @return map with ingredients and amounts of each one available
+     */
+    Map<Class<? extends Ingredient>, Float> getStorage();
+
+    /**
+     * If storage is refrigerated or not.
+     *
+     * @return true is refrigerated, false otherwise.
+     */
+    boolean isRefrigerated();
+
+    /**
+     * Add ingredient to storage.
+     *
+     * @param i Ingredient to add.
+     * @param amount amount to add.
+     */
+    void addIngredient(Class<? extends Ingredient> i, float amount);
 }

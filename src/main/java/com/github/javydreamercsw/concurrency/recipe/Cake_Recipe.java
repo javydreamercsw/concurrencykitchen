@@ -30,14 +30,14 @@ import com.github.javydreamercsw.concurrency.ingredient.Almond_Extract;
 import com.github.javydreamercsw.concurrency.ingredient.Baking_Powder;
 import com.github.javydreamercsw.concurrency.ingredient.Cake_Flour;
 import com.github.javydreamercsw.concurrency.ingredient.Cream_of_Tartar;
-import com.github.javydreamercsw.concurrency.ingredient.Egg_White;
+import com.github.javydreamercsw.concurrency.ingredient.processed.Egg_White;
 import com.github.javydreamercsw.concurrency.ingredient.Granulated_Sugar;
 import com.github.javydreamercsw.concurrency.ingredient.Inverted_Sugar;
 import com.github.javydreamercsw.concurrency.ingredient.Milk_Powder;
 import com.github.javydreamercsw.concurrency.ingredient.Sea_Salt;
 import com.github.javydreamercsw.concurrency.ingredient.Shortening;
 import com.github.javydreamercsw.concurrency.ingredient.Strawberry;
-import com.github.javydreamercsw.concurrency.ingredient.Vanilla;
+import com.github.javydreamercsw.concurrency.ingredient.Vanilla_Extract;
 import com.github.javydreamercsw.concurrency.ingredient.Water;
 import com.github.javydreamercsw.concurrency.ingredient.Whole_Egg;
 import com.github.javydreamercsw.concurrency.ingredient.processed.Cake;
@@ -59,7 +59,7 @@ public class Cake_Recipe extends AbstractRecipe
         //Ingredients
         getIngredients().put(Shortening.class, 2f);
         getIngredients().put(Inverted_Sugar.class, 0.5f);
-        getIngredients().put(Vanilla.class, 0.25f);
+        getIngredients().put(Vanilla_Extract.class, 0.25f);
         getIngredients().put(Cake_Flour.class, 2.5f);
         getIngredients().put(Granulated_Sugar.class, 2.25f);
         getIngredients().put(Milk_Powder.class, 4f);

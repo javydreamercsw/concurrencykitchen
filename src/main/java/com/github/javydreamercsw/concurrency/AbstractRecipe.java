@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class AbstractRecipe implements Recipe
+public abstract class AbstractRecipe implements Recipe
 {
 
     /**
@@ -99,34 +99,10 @@ public class AbstractRecipe implements Recipe
             if (step.getTime() > 0)
             {
                 sb.append(" Takes approx. ")
-                        .append(getTimeReadable(step.getTime()));
+                        .append(Util.getTimeReadable(step.getTime()));
             }
             sb.append("\n");
         }
         return sb.toString();
-    }
-
-    protected String getTimeReadable(long time)
-    {
-        long secondsInMilli = 1000;
-        long minutesInMilli = secondsInMilli * 60;
-        long hoursInMilli = minutesInMilli * 60;
-        long daysInMilli = hoursInMilli * 24;
-
-        long elapsedDays = time / daysInMilli;
-        time = time % daysInMilli;
-
-        long elapsedHours = time / hoursInMilli;
-        time = time % hoursInMilli;
-
-        long elapsedMinutes = time / minutesInMilli;
-        time = time % minutesInMilli;
-
-        long elapsedSeconds = time / secondsInMilli;
-
-        return String.format(
-                "%d days, %d hours, %d minutes, %d seconds%n",
-                elapsedDays,
-                elapsedHours, elapsedMinutes, elapsedSeconds);
     }
 }

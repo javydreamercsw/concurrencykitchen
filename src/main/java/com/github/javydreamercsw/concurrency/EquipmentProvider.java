@@ -41,5 +41,5 @@ public interface EquipmentProvider
      * @return A list of the requested equipment. Might be less than requested
      * if there's no more available.
      */
-    List<Equipment> getIngredient(Class<? extends Equipment> clazz, int amount);
+    List<Equipment> getEquipment(Class<? extends Equipment> clazz, int amount);
 }

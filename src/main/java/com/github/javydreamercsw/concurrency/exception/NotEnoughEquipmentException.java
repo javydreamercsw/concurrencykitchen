@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency;
+package com.github.javydreamercsw.concurrency.exception;
+
+import com.github.javydreamercsw.concurrency.Equipment;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public class NotEnoughIngredientException extends Exception
+public class NotEnoughEquipmentException extends Exception
 {
 
-    public NotEnoughIngredientException(Ingredient i)
+    public NotEnoughEquipmentException(Equipment equipment)
     {
-        super("Not enough " + i.getName() + "!");
+        super("Not enough " + equipment.getName() + "!");
     }
 }

@@ -13,48 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency;
+package com.github.javydreamercsw.concurrency.exception;
 
-import com.github.javydreamercsw.concurrency.staff.Cook;
+import com.github.javydreamercsw.concurrency.Ingredient;
 
 /**
- * This represents a scenario for the different chapters in the book.
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public interface Scenario
+public class NotEnoughIngredientException extends Exception
 {
 
-    /**
-     * Scenario name.
-     *
-     * @return name
-     */
-    String getName();
-
-    /**
-     * Get chapter this scenario is for.
-     *
-     * @return chapter number
-     */
-    int getChapter();
-
-    /**
-     * Run the scenario.
-     */
-    void cook();
-
-    /**
-     * Add a recipe for this scenario.
-     *
-     * @param r recipe
-     */
-    void addRecipe(Recipe r);
-
-    /**
-     * Add cook to scenario.
-     *
-     * @param chef cook to add.
-     */
-    public void addCook(Cook chef);
+    public NotEnoughIngredientException(Ingredient i)
+    {
+        super("Not enough " + i.getName() + "!");
+    }
 }

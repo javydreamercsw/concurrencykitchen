@@ -15,14 +15,19 @@
  */
 package com.github.javydreamercsw.concurrency.staff;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.github.javydreamercsw.concurrency.Ingredient;
 import com.github.javydreamercsw.concurrency.ProcessedIngredient;
 import com.github.javydreamercsw.concurrency.Recipe;
+import com.github.javydreamercsw.concurrency.exception.NotEnoughIngredientException;
 
 /**
  *
@@ -31,10 +36,10 @@ import com.github.javydreamercsw.concurrency.Recipe;
 public class SousChef extends Cook
 {
 
-    private final Map<Class<? extends ProcessedIngredient>, Float> WAITING
+    private final Map<Class<? extends Ingredient>, Float> WAITING
             = new HashMap<>();
-    private final ConcurrentLinkedQueue<Recipe> recipes
-            = new ConcurrentLinkedQueue<>();
+    private final List<Recipe> recipes
+            = Collections.synchronizedList(new ArrayList());
     private final ConcurrentLinkedQueue<Cook> cooks
             = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<Cook> busyChefs
@@ -66,14 +71,17 @@ public class SousChef extends Cook
      * @param i ingredient needed.
      * @param need amount needed.
      */
-    public synchronized void notifyNeed(Class<? extends ProcessedIngredient> i,
+    public synchronized void notifyNeed(Class<? extends Ingredient> i,
             float need)
     {
         try
         {
             WAITING.put(i, need);
-            ProcessedIngredient pi = i.newInstance();
-            addRecipe(pi.getRecipe());
+            if (i.isAssignableFrom(ProcessedIngredient.class))
+            {
+                ProcessedIngredient pi = (ProcessedIngredient) i.newInstance();
+                addRecipe(pi.getRecipe());
+            }
         } catch (InstantiationException | IllegalAccessException ex)
         {
             LOG.log(Level.SEVERE, null, ex);
@@ -88,31 +96,47 @@ public class SousChef extends Cook
 
     public void cook()
     {
-        //Al chefs are set to idle
-        while (!cooks.isEmpty())
+        try
         {
-            idleChefs.add(cooks.remove());
-        }
-        while (!recipes.isEmpty())
-        {
-            if (!idleChefs.isEmpty())
+            //Al chefs are set to idle
+            while (!cooks.isEmpty())
             {
-                //Assign a cook
-                Cook chef = idleChefs.remove();
-                busyChefs.add(chef);
-                chef.addRecipe(recipes.remove());
-                chef.run();
-            } else
+                idleChefs.add(cooks.remove());
+            }
+            Recipe next = recipes.get(0);
+            //Check if there are other recipes that needs to be done before
+            List<Recipe> missing = analyzeIngredients(next, true);
+            while (!missing.isEmpty())
             {
-                try
+                //Insert them prior the real one.
+                Recipe m = missing.remove(0);
+                speakout("Need to prepare: " + m.getName());
+                recipes.add(0, m);
+            }
+            while (!recipes.isEmpty())
+            {
+                if (!idleChefs.isEmpty())
                 {
-                    speakout("Waiting for a free cook...");
-                    Thread.sleep(10000);
-                } catch (InterruptedException ex)
+                    //Assign a cook
+                    Cook chef = idleChefs.remove();
+                    busyChefs.add(chef);
+                    chef.addRecipe(recipes.remove(0));
+                    chef.start();
+                } else
                 {
-                    LOG.log(Level.SEVERE, null, ex);
+                    try
+                    {
+                        speakout("Waiting for a free cook...");
+                        Thread.sleep(10000);
+                    } catch (InterruptedException ex)
+                    {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
                 }
             }
+        } catch (NotEnoughIngredientException ex)
+        {
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -125,6 +149,21 @@ public class SousChef extends Cook
     void notifyDone(Cook c)
     {
         busyChefs.remove(c);
-        idleChefs.add(c);
+        //Create a new one with the same name
+        idleChefs.add(new Cook(c.getCookName()));
+    }
+
+    public void notifyException(Exception ex)
+    {
+        //Got an exception, stop execution.
+        LOG.log(Level.SEVERE, "Unable to prepare the recipe(s)", ex);
+        //Stop all cooks
+        speakout("Stopping the kitchen...");
+        busyChefs.forEach(cook ->
+        {
+            cook.stopCooking();
+        });
+        speakout("Done!");
+        System.exit(0);
     }
 }

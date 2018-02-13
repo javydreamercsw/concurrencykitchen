@@ -15,13 +15,14 @@
  */
 package com.github.javydreamercsw.concurrency;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractEquipmentProvider implements EquipmentProvider
 {
 
-    private final Map<Class<? extends Equipment>, Integer> storage = new HashMap<>();
+    private final Map<Class<? extends Equipment>, Integer> storage
+            = new ConcurrentHashMap<>();
 
     public AbstractEquipmentProvider()
     {
@@ -31,5 +32,44 @@ public abstract class AbstractEquipmentProvider implements EquipmentProvider
     public String getName()
     {
         return getClass().getSimpleName().replaceAll("_", " ");
+    }
+
+    @Override
+    public synchronized int getEquipment(Class<? extends Equipment> clazz,
+            final int amount)
+    {
+        if (storage.containsKey(clazz))
+        {
+            if (amount > storage.get(clazz))
+            {
+                return storage.put(clazz, 0);
+            } else
+            {
+                return storage.put(clazz, storage.get(clazz) - amount);
+            }
+        } else
+        {
+            return 0;
+        }
+    }
+
+    @Override
+    public synchronized final void addEquipment(Class<? extends Equipment> clazz,
+            int amount)
+    {
+        if (storage.containsKey(clazz))
+        {
+            storage.put(clazz, amount + storage.get(clazz));
+        } else
+        {
+            storage.put(clazz, amount);
+        }
+    }
+
+    @Override
+    public synchronized int getEmptySpace()
+    {
+        return getcapacity()
+                - storage.values().stream().mapToInt(Number::intValue).sum();
     }
 }

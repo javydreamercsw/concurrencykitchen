@@ -15,21 +15,22 @@
  */
 package com.github.javydreamercsw.concurrency.staff;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.openide.util.Lookup;
-
+import com.github.javydreamercsw.concurrency.Equipment;
 import com.github.javydreamercsw.concurrency.IRecipeStep;
 import com.github.javydreamercsw.concurrency.Ingredient;
-import com.github.javydreamercsw.concurrency.IngredientProvider;
-import com.github.javydreamercsw.concurrency.MissingStorageException;
-import com.github.javydreamercsw.concurrency.NotEnoughIngredientException;
 import com.github.javydreamercsw.concurrency.ProcessedIngredient;
 import com.github.javydreamercsw.concurrency.Recipe;
 import com.github.javydreamercsw.concurrency.Util;
+import com.github.javydreamercsw.concurrency.exception.MissingStorageException;
+import com.github.javydreamercsw.concurrency.exception.NotEnoughEquipmentException;
+import com.github.javydreamercsw.concurrency.exception.NotEnoughIngredientException;
 
 /**
  *
@@ -44,6 +45,7 @@ public class Cook extends Thread
     private static final Logger LOG
             = Logger.getLogger(Cook.class.getName());
     private SousChef manager;
+    private boolean cook = true;
 
     public Cook(String name)
     {
@@ -56,13 +58,30 @@ public class Cook extends Thread
     }
 
     private long cook(Recipe recipe) throws MissingStorageException,
-            InterruptedException, NotEnoughIngredientException
+            InterruptedException, NotEnoughIngredientException,
+            NotEnoughEquipmentException
     {
         long timeElapsed = 0;
         speakout("Preparing " + recipe.getName());
         int count = 1;
         for (IRecipeStep rs : recipe.getSteps())
         {
+            if (rs.getRequiredEquipment() != null
+                    && !rs.getRequiredEquipment().isEmpty())
+            {
+                //Need to retrieve equipment for this step.
+                for (Class<? extends Equipment> e : rs.getRequiredEquipment())
+                {
+                    try
+                    {
+                        Util.getEquipment(e, 1);
+                    } catch (NotEnoughEquipmentException ex)
+                    {
+                        speakout("Missing equipment: " + e.getSimpleName());
+                        throw ex;
+                    }
+                }
+            }
             speakout("Performing step #" + (count++)
                     + "\n" + rs.getDescription());
             if (rs.getTime() > 0)
@@ -104,7 +123,7 @@ public class Cook extends Thread
                     if (leftover > 0)
                     {
                         //Storing surplus
-                        Util.store(entry.getKey(), entry.getValue());
+                        Util.storeIngredient(entry.getKey(), entry.getValue());
                     }
                 }
             }
@@ -118,21 +137,19 @@ public class Cook extends Thread
     public void run()
     {
         long timeElapsed = 0;
-        while (!recipes.isEmpty())
+        while (shouldCook() && !recipes.isEmpty())
         {
             try
             {
                 Recipe current = recipes.remove();
-                analyzeIngredients(current);
+                analyzeIngredients(current, false);
                 //If we are here we have all the ingredients.
                 //Start cooking. Only you cooking so not much planning.
-                for (Recipe r : recipes)
-                {
-                    timeElapsed += cook(r);
-                }
-            } catch (NotEnoughIngredientException | InterruptedException | MissingStorageException ex)
+                timeElapsed += cook(current);
+            } catch (NotEnoughIngredientException | InterruptedException | MissingStorageException | NotEnoughEquipmentException ex)
             {
-                LOG.log(Level.SEVERE, null, ex);
+                manager.notifyException(ex);
+                break;
             }
         }
         speakout("Total time elapsed: "
@@ -152,11 +169,24 @@ public class Cook extends Thread
         return name;
     }
 
-    private void analyzeIngredients(Recipe r) throws NotEnoughIngredientException
+    /**
+     * Analyze the needed ingredients.
+     *
+     * @param r Recipe to analyze.
+     * @param check True if you only want to check the list and not retrieve the
+     * ingredients.
+     * @return List of missing recipes.
+     * @throws NotEnoughIngredientException
+     */
+    protected List<Recipe> analyzeIngredients(Recipe r, boolean check) throws NotEnoughIngredientException
     {
+        List<Recipe> missing = new ArrayList<>();
         speakout("Analyzing recipe: " + r.getName());
         //Sort through the ingredients and see if some require preparation
-        speakout("Gathering ingredients...");
+        if (!check)
+        {
+            speakout("Gathering ingredients...");
+        }
         for (Entry<Class<? extends Ingredient>, Float> entry
                 : r.getIngredients().entrySet())
         {
@@ -166,38 +196,35 @@ public class Cook extends Thread
                 Ingredient ingredient = i.newInstance();
                 float need = entry.getValue();
                 //Check if there's some in storage
-                for (IngredientProvider ip
-                        : Lookup.getDefault().lookupAll(IngredientProvider.class))
-                {
-                    float obtained = ip.getIngredient(i, entry.getValue());
-                    if (obtained > 0)
-                    {
-                        LOG.log(Level.FINE, "Obtained {0} {1} of {2} from {3}",
-                                new Object[]
-                                {
-                                    obtained,
-                                    ingredient.getUnits().getName(),
-                                    ingredient.getName(), ip.getName()
-                                });
-                    }
-                    need -= obtained;
-                    if (need <= 0)
-                    {
-                        break;
-                    }
-                }
+                need -= check ? Util.hasIngredient(i, need) : Util.getIngredient(i, need);
                 if (need > 0)
                 {
                     //Not in the storage, if it's a processed ingredient we might have some chance
                     if (ingredient instanceof ProcessedIngredient)
                     {
-                        speakout("Need to prepare some " + ingredient.getName());
+                        speakout("Someone needs to prepare some "
+                                + ingredient.getName());
                         ProcessedIngredient pi = (ProcessedIngredient) ingredient;
-                        analyzeIngredients(pi.getRecipe());
-                        addRecipe(pi.getRecipe());
+                        missing.add(pi.getRecipe());
+                        if (manager != null)
+                        {
+                            //Let the manager know
+                            manager.notifyNeed(pi.getClass(), need);
+                        } else
+                        {
+                            //I have to do it myself
+                            addRecipe(pi.getRecipe());
+                        }
                     } else
                     {
-                        throw new NotEnoughIngredientException(ingredient);
+                        if (manager != null)
+                        {
+                            //Let the manager know
+                            manager.notifyNeed(entry.getKey(), need);
+                        } else
+                        {
+                            throw new NotEnoughIngredientException(ingredient);
+                        }
                     }
                 }
             } catch (InstantiationException | IllegalAccessException ex)
@@ -205,7 +232,17 @@ public class Cook extends Thread
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
-        speakout("Able to gather all ingredients!");
+        if (!check)
+        {
+            if (missing.isEmpty())
+            {
+                speakout("Able to gather all ingredients!");
+            } else
+            {
+                speakout("Waiting for ingredients!");
+            }
+        }
+        return missing;
     }
 
     public synchronized void addRecipe(Recipe r)
@@ -216,5 +253,15 @@ public class Cook extends Thread
     public void speakout(String s)
     {
         System.out.println(getCookName() + ": " + s);
+    }
+
+    public synchronized void stopCooking()
+    {
+        cook = false;
+    }
+
+    public synchronized boolean shouldCook()
+    {
+        return cook;
     }
 }

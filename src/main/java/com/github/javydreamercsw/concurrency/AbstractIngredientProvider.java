@@ -50,6 +50,19 @@ public abstract class AbstractIngredientProvider implements IngredientProvider
         }
     }
 
+    @Override
+    public synchronized float hasIngredient(Class<? extends Ingredient> clazz,
+            float amount)
+    {
+        if (storage.containsKey(clazz) && amount <= storage.get(clazz))
+        {
+            return amount;
+        } else
+        {
+            return 0;
+        }
+    }
+
     /**
      * @return the storage
      */

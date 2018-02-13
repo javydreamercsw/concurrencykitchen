@@ -23,45 +23,54 @@ import org.openide.util.lookup.ServiceProvider;
 
 import com.github.javydreamercsw.concurrency.AbstractScenario;
 import com.github.javydreamercsw.concurrency.Ingredient;
-import com.github.javydreamercsw.concurrency.MissingStorageException;
 import com.github.javydreamercsw.concurrency.Scenario;
 import com.github.javydreamercsw.concurrency.Util;
+import com.github.javydreamercsw.concurrency.equipment.Bowl;
+import com.github.javydreamercsw.concurrency.exception.MissingStorageException;
+import com.github.javydreamercsw.concurrency.recipe.Separated_Egg_Recipe;
 import com.github.javydreamercsw.concurrency.staff.Cook;
-import com.github.javydreamercsw.concurrency.recipe.Cake_Recipe;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-@ServiceProvider(service = Scenario.class)
-public class HomeKitchen extends AbstractScenario
+@ServiceProvider(service = Scenario.class, position = 1)
+public class EasyRecipe extends AbstractScenario
 {
 
     private static final Logger LOG
-            = Logger.getLogger(HomeKitchen.class.getName());
+            = Logger.getLogger(EasyRecipe.class.getName());
 
-    public HomeKitchen()
+    public EasyRecipe()
     {
-        //Add enough ingredients to the pantry.
-        Lookup.getDefault().lookupAll(Ingredient.class).forEach(i ->
+        try
         {
-            try
+            //Add enough ingredients to the pantry.
+            Lookup.getDefault().lookupAll(Ingredient.class).forEach(i ->
             {
-                Util.store(i.getClass(), 100);
-            } catch (MissingStorageException ex)
-            {
-                LOG.log(Level.SEVERE, null, ex);
+                try
+                {
+                    Util.storeIngredient(i.getClass(), 100);
+                } catch (MissingStorageException ex)
+                {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
+            );
+            //Add a bowl
+            Util.storeEquipment(Bowl.class, 1);
+            addRecipe(new Separated_Egg_Recipe());
+            addCook(new Cook("Juan"));
+        } catch (MissingStorageException ex)
+        {
+            LOG.log(Level.SEVERE, null, ex);
         }
-        );
-        setRecipe(new Cake_Recipe());
-        addCook(new Cook("Juan"));
     }
 
     @Override
     public String getName()
     {
-        return "Home Kitchen";
+        return "Easy Recipe";
     }
 
     @Override

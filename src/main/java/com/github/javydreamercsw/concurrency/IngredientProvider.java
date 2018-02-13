@@ -43,6 +43,15 @@ public interface IngredientProvider
     float getIngredient(Class<? extends Ingredient> clazz, float amount);
 
     /**
+     * Checks if an amount of ingredients is available from provider.
+     *
+     * @param clazz Type of ingredient
+     * @param amount Amount requested
+     * @return the amount available in this storage
+     */
+    float hasIngredient(Class<? extends Ingredient> clazz, float amount);
+
+    /**
      * Get a map with ingredients and amounts of each one available.
      *
      * @return map with ingredients and amounts of each one available

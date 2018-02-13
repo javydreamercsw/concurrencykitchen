@@ -15,6 +15,7 @@
  */
 package com.github.javydreamercsw.concurrency;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 import com.github.javydreamercsw.concurrency.staff.Cook;
@@ -29,19 +30,23 @@ public abstract class AbstractScenario implements Scenario
 
     private static final Logger LOG
             = Logger.getLogger(AbstractScenario.class.getName());
-    private SousChef chef = new SousChef("Pablo");
-    private Recipe recipe;
+    private final SousChef chef = new SousChef("Sous Chef Pablo");
+    private final ConcurrentLinkedQueue<Recipe> recipes
+            = new ConcurrentLinkedQueue<>();
 
     @Override
-    public final void setRecipe(Recipe r)
+    public final void addRecipe(Recipe r)
     {
-        this.recipe = r;
+        recipes.add(r);
     }
 
     @Override
     public void cook()
     {
-        chef.addRecipe(recipe);
+        while (!recipes.isEmpty())
+        {
+            chef.addRecipe(recipes.remove());
+        }
         chef.cook();
     }
 

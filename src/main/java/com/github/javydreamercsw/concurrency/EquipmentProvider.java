@@ -15,8 +15,6 @@
  */
 package com.github.javydreamercsw.concurrency;
 
-import java.util.List;
-
 /**
  * This interface are for object that provide equipment like a a closet or
  * cabinet.
@@ -25,6 +23,20 @@ import java.util.List;
  */
 public interface EquipmentProvider
 {
+
+    /**
+     * How many equipment does it fit.
+     *
+     * @return amount of equipment it can hold.
+     */
+    int getcapacity();
+
+    /**
+     * How many slots it has to store stuff.
+     *
+     * @return amount of empty spaces.
+     */
+    int getEmptySpace();
 
     /**
      * Get provider name.
@@ -38,8 +50,15 @@ public interface EquipmentProvider
      *
      * @param clazz Type of equipment
      * @param amount Amount requested
-     * @return A list of the requested equipment. Might be less than requested
-     * if there's no more available.
+     * @return The amount of equipment obtained.
      */
-    List<Equipment> getEquipment(Class<? extends Equipment> clazz, int amount);
+    int getEquipment(Class<? extends Equipment> clazz, int amount);
+
+    /**
+     * Add equipment to this storage.
+     *
+     * @param clazz Type of equipment to store.
+     * @param amount amount to store.
+     */
+    void addEquipment(Class<? extends Equipment> clazz, int amount);
 }

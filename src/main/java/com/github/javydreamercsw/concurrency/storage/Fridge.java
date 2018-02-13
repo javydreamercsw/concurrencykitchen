@@ -17,20 +17,27 @@ package com.github.javydreamercsw.concurrency.storage;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import com.github.javydreamercsw.concurrency.AbstractIngredientProvider;
-import com.github.javydreamercsw.concurrency.IngredientProvider;
+import com.github.javydreamercsw.concurrency.AbstractKitchenStorage;
+import com.github.javydreamercsw.concurrency.Ingredient;
+import com.github.javydreamercsw.concurrency.IngredientStorage;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-@ServiceProvider(service = IngredientProvider.class)
-public class Fridge extends AbstractIngredientProvider
+@ServiceProvider(service = IngredientStorage.class)
+public class Fridge extends AbstractKitchenStorage<Ingredient> implements IngredientStorage
 {
 
     @Override
     public boolean isRefrigerated()
     {
         return true;
+    }
+
+    @Override
+    public int getcapacity()
+    {
+        return 10000;
     }
 }

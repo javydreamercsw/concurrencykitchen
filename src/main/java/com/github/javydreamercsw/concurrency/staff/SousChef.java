@@ -33,7 +33,7 @@ import com.github.javydreamercsw.concurrency.exception.NotEnoughIngredientExcept
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public class SousChef extends Cook
+public class SousChef extends Cook implements EmployeeListener
 {
 
     private final Map<Class<? extends Ingredient>, Float> WAITING
@@ -92,6 +92,7 @@ public class SousChef extends Cook
     {
         cook.setManager(this);
         cooks.add(cook);
+        cook.addListener(this);
     }
 
     public void cook()
@@ -146,13 +147,6 @@ public class SousChef extends Cook
         recipes.add(r);
     }
 
-    void notifyDone(Cook c)
-    {
-        busyChefs.remove(c);
-        //Create a new one with the same name
-        idleChefs.add(new Cook(c.getCookName()));
-    }
-
     public void notifyException(Exception ex)
     {
         //Got an exception, stop execution.
@@ -165,5 +159,17 @@ public class SousChef extends Cook
         });
         speakout("Done!");
         System.exit(0);
+    }
+
+    @Override
+    public void taskDone(Cook c)
+    {
+        busyChefs.remove(c);
+        //Create a new one with the same name
+        idleChefs.add(new Cook(c.getCookName()));
+        if (busyChefs.isEmpty())
+        {
+            cleanup();
+        }
     }
 }

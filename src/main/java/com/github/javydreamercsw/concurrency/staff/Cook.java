@@ -41,6 +41,8 @@ public class Cook extends Thread
 
     private final ConcurrentLinkedQueue<Recipe> recipes
             = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<EmployeeListener> listeners
+            = new ConcurrentLinkedQueue<>();
     private final String name;
     private static final Logger LOG
             = Logger.getLogger(Cook.class.getName());
@@ -154,11 +156,7 @@ public class Cook extends Thread
         }
         speakout("Total time elapsed: "
                 + Util.getTimeReadable(timeElapsed));
-        if (manager != null)
-        {
-            //I'm done, let my manager know
-            manager.notifyDone(this);
-        }
+        cleanup();
     }
 
     /**
@@ -263,5 +261,18 @@ public class Cook extends Thread
     public synchronized boolean shouldCook()
     {
         return cook;
+    }
+
+    public void addListener(EmployeeListener listener)
+    {
+        listeners.add(listener);
+    }
+
+    protected void cleanup()
+    {
+        listeners.forEach(l ->
+        {
+            l.taskDone(this);
+        });
     }
 }

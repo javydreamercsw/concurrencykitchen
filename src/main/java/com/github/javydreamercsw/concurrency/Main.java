@@ -15,10 +15,11 @@
  */
 package com.github.javydreamercsw.concurrency;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.openide.util.Lookup;
@@ -31,6 +32,7 @@ public class Main
 {
 
     private final static Logger LOG = Logger.getLogger(Main.class.getName());
+    private boolean ready = false;
 
     /**
      * @param args the command line arguments
@@ -42,19 +44,45 @@ public class Main
 
         } else
         {
-            TreeMap<Integer, List<Scenario>> options = new TreeMap<>();
+            new Menu().start();
+        }
+    }
+
+    /**
+     * @return the ready
+     */
+    public synchronized boolean isReady()
+    {
+        return ready;
+    }
+
+    /**
+     * @param ready the ready to set
+     */
+    public synchronized void setReady(boolean ready)
+    {
+        this.ready = ready;
+    }
+
+    private static class Menu extends Thread implements ScenarioListener
+    {
+
+        private boolean run = true;
+
+        @Override
+        public void run()
+        {
+            TreeMap<Integer, ArrayList<Scenario>> options = new TreeMap<>();
             Lookup.getDefault().lookupAll(Scenario.class).forEach(s ->
             {
-                if (options.containsKey(s.getChapter()))
+                if (!options.containsKey(s.getChapter()))
                 {
-                    options.get(s.getChapter()).add(s);
-                } else
-                {
-                    options.put(s.getChapter(), Arrays.asList(s));
+                    options.put(s.getChapter(), new ArrayList<>());
                 }
+                options.get(s.getChapter()).add(s);
             });
 
-            while (true)
+            while (isRun())
             {
                 System.out.println("Available Chapters:");
                 options.entrySet().forEach((entry) ->
@@ -87,8 +115,8 @@ public class Main
                         }
                         System.out.println("\tb) back");
                         System.out.println("\tq) quit");
-                        selection = scanner.next().trim().toLowerCase();
-                        switch (selection)
+                        String subselection = scanner.next().trim().toLowerCase();
+                        switch (subselection)
                         {
                             case "b":
                                 break OUTER;
@@ -96,10 +124,23 @@ public class Main
                                 System.out.println("Exiting");
                                 System.exit(0);
                             default:
-                                Integer option = Integer.valueOf(selection);
+                                Integer option = Integer.valueOf(subselection);
                                 System.out.println("Selected " + option);
                                 {
-                                    group.get(option - 1).cook();
+                                    Scenario s = group.get(option - 1);
+                                    s.addListener(this);
+                                    setRun(false);
+                                    s.cook();
+                                    while (!isRun())
+                                    {
+                                        try
+                                        {
+                                            Thread.sleep(100);
+                                        } catch (InterruptedException ex)
+                                        {
+                                            LOG.log(Level.SEVERE, null, ex);
+                                        }
+                                    }
                                 }
                                 break;
                         }
@@ -107,6 +148,27 @@ public class Main
                 }
             }
         }
-    }
 
+        @Override
+        public synchronized void scenarioDone()
+        {
+            setRun(true);
+        }
+
+        /**
+         * @return the run
+         */
+        public synchronized boolean isRun()
+        {
+            return run;
+        }
+
+        /**
+         * @param run the run to set
+         */
+        public synchronized void setRun(boolean run)
+        {
+            this.run = run;
+        }
+    }
 }

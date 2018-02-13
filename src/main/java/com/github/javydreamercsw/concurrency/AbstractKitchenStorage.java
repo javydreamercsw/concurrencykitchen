@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Javier A. Ortiz Bultron <javierortiz@pingidentity.com>.
+ * Copyright 2018 Javier Ortiz Bultron <javierortiz@pingidentity.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,17 @@ package com.github.javydreamercsw.concurrency;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractEquipmentProvider implements EquipmentProvider
+public abstract class AbstractKitchenStorage<T> implements KitchenStorage<T>
 {
 
-    private final Map<Class<? extends Equipment>, Integer> storage
+    private final Map<Class<? extends T>, Double> storage
             = new ConcurrentHashMap<>();
 
-    public AbstractEquipmentProvider()
+    @Override
+    public double getEmptySpace()
     {
+        return getcapacity()
+                - storage.values().stream().mapToDouble(Number::doubleValue).sum();
     }
 
     @Override
@@ -35,14 +38,13 @@ public abstract class AbstractEquipmentProvider implements EquipmentProvider
     }
 
     @Override
-    public synchronized int getEquipment(Class<? extends Equipment> clazz,
-            final int amount)
+    public double getItem(Class<? extends T> clazz, double amount)
     {
         if (storage.containsKey(clazz))
         {
             if (amount > storage.get(clazz))
             {
-                return storage.put(clazz, 0);
+                return storage.put(clazz, new Double(0));
             } else
             {
                 return storage.put(clazz, storage.get(clazz) - amount);
@@ -54,8 +56,7 @@ public abstract class AbstractEquipmentProvider implements EquipmentProvider
     }
 
     @Override
-    public synchronized final void addEquipment(Class<? extends Equipment> clazz,
-            int amount)
+    public void addItem(Class<? extends T> clazz, double amount)
     {
         if (storage.containsKey(clazz))
         {
@@ -67,9 +68,15 @@ public abstract class AbstractEquipmentProvider implements EquipmentProvider
     }
 
     @Override
-    public synchronized int getEmptySpace()
+    public synchronized double hasItem(Class<? extends T> clazz,
+            double amount)
     {
-        return getcapacity()
-                - storage.values().stream().mapToInt(Number::intValue).sum();
+        if (storage.containsKey(clazz) && amount <= storage.get(clazz))
+        {
+            return amount;
+        } else
+        {
+            return 0;
+        }
     }
 }

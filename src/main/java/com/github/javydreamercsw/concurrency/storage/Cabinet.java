@@ -17,15 +17,16 @@ package com.github.javydreamercsw.concurrency.storage;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import com.github.javydreamercsw.concurrency.AbstractEquipmentProvider;
-import com.github.javydreamercsw.concurrency.EquipmentProvider;
+import com.github.javydreamercsw.concurrency.AbstractKitchenStorage;
+import com.github.javydreamercsw.concurrency.Equipment;
+import com.github.javydreamercsw.concurrency.KitchenStorage;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-@ServiceProvider(service = EquipmentProvider.class)
-public class Cabinet extends AbstractEquipmentProvider
+@ServiceProvider(service = KitchenStorage.class)
+public class Cabinet extends AbstractKitchenStorage<Equipment>
 {
 
     @Override

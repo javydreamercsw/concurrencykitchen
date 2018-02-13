@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency.staff;
+package com.github.javydreamercsw.concurrency;
 
 /**
+ * This interface are for object that provide ingredients like a pantry or
+ * fridge.
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public interface EmployeeListener
+public interface IngredientStorage extends KitchenStorage<Ingredient>
 {
 
     /**
-     * Let listeners know you are done.
+     * If storage is refrigerated or not.
      *
-     * @param c Cook that finished.
+     * @return true is refrigerated, false otherwise.
      */
-    void taskDone(Cook c);
+    boolean isRefrigerated();
 }

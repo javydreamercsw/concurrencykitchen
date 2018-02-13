@@ -19,13 +19,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 import com.github.javydreamercsw.concurrency.staff.Cook;
+import com.github.javydreamercsw.concurrency.staff.EmployeeListener;
 import com.github.javydreamercsw.concurrency.staff.SousChef;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public abstract class AbstractScenario implements Scenario
+public abstract class AbstractScenario implements Scenario, EmployeeListener
 {
 
     private static final Logger LOG
@@ -33,6 +34,14 @@ public abstract class AbstractScenario implements Scenario
     private final SousChef chef = new SousChef("Sous Chef Pablo");
     private final ConcurrentLinkedQueue<Recipe> recipes
             = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<ScenarioListener> listeners
+            = new ConcurrentLinkedQueue<>();
+
+    public AbstractScenario()
+    {
+        //Wipe out storage
+
+    }
 
     @Override
     public final void addRecipe(Recipe r)
@@ -47,6 +56,7 @@ public abstract class AbstractScenario implements Scenario
         {
             chef.addRecipe(recipes.remove());
         }
+        chef.addListener(this);
         chef.cook();
     }
 
@@ -57,5 +67,20 @@ public abstract class AbstractScenario implements Scenario
         {
             chef.addStaff(cook);
         }
+    }
+
+    @Override
+    public void addListener(ScenarioListener listener)
+    {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void taskDone(Cook c)
+    {
+        listeners.forEach(l ->
+        {
+            l.scenarioDone();
+        });
     }
 }

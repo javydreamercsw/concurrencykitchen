@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency.staff;
+package com.github.javydreamercsw.concurrency;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public interface EmployeeListener
+public interface ScenarioListener
 {
 
     /**
-     * Let listeners know you are done.
-     *
-     * @param c Cook that finished.
+     * Scenario is complete.
      */
-    void taskDone(Cook c);
+    void scenarioDone();
 }

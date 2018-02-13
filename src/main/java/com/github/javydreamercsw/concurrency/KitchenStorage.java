@@ -16,27 +16,19 @@
 package com.github.javydreamercsw.concurrency;
 
 /**
- * This interface are for object that provide equipment like a a closet or
- * cabinet.
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
+ * @param <T> Type of items it contains.
  */
-public interface EquipmentProvider
+public interface KitchenStorage<T>
 {
-
-    /**
-     * How many equipment does it fit.
-     *
-     * @return amount of equipment it can hold.
-     */
-    int getcapacity();
 
     /**
      * How many slots it has to store stuff.
      *
      * @return amount of empty spaces.
      */
-    int getEmptySpace();
+    double getEmptySpace();
 
     /**
      * Get provider name.
@@ -46,19 +38,35 @@ public interface EquipmentProvider
     String getName();
 
     /**
-     * Request amount of equipment from provider.
+     * How many equipment does it fit.
      *
-     * @param clazz Type of equipment
-     * @param amount Amount requested
-     * @return The amount of equipment obtained.
+     * @return amount of equipment it can hold.
      */
-    int getEquipment(Class<? extends Equipment> clazz, int amount);
+    int getcapacity();
 
     /**
-     * Add equipment to this storage.
+     * Request amount of item from storage.
      *
-     * @param clazz Type of equipment to store.
+     * @param clazz Type of item
+     * @param amount Amount requested
+     * @return The amount of items obtained.
+     */
+    double getItem(Class<? extends T> clazz, double amount);
+
+    /**
+     * Add item to this storage.
+     *
+     * @param clazz Type of item to store.
      * @param amount amount to store.
      */
-    void addEquipment(Class<? extends Equipment> clazz, int amount);
+    void addItem(Class<? extends T> clazz, double amount);
+
+    /**
+     * Checks if an amount of items is available from storage.
+     *
+     * @param clazz Type of item
+     * @param amount Amount requested
+     * @return the amount available in this storage
+     */
+    double hasItem(Class<? extends T> clazz, double amount);
 }

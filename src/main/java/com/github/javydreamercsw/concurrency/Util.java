@@ -74,17 +74,17 @@ public class Util
                         amount, ing.getUnits(), ing.getName()
                     });
             boolean stored = false;
-            for (IngredientProvider ip
-                    : Lookup.getDefault().lookupAll(IngredientProvider.class))
+            for (IngredientStorage ip
+                    : Lookup.getDefault().lookupAll(IngredientStorage.class))
             {
                 if (ing.requiresRefrigeration() && ip.isRefrigerated())
                 {
-                    ip.addIngredient(i, amount);
+                    ip.addItem(i, amount);
                     stored = true;
                     break;
                 } else if (!ing.requiresRefrigeration() && !ip.isRefrigerated())
                 {
-                    ip.addIngredient(i, amount);
+                    ip.addItem(i, amount);
                     stored = true;
                     break;
                 }
@@ -100,31 +100,31 @@ public class Util
         }
     }
 
-    public static Float hasIngredient(Class<? extends Ingredient> i, float need)
+    public static double hasIngredient(Class<? extends Ingredient> i, float need)
             throws NotEnoughIngredientException
     {
         return getIngredient(i, need, false);
     }
 
-    public static Float getIngredient(Class<? extends Ingredient> i, float need)
+    public static double getIngredient(Class<? extends Ingredient> i, float need)
             throws NotEnoughIngredientException
     {
         return getIngredient(i, need, true);
     }
 
-    public static Float getIngredient(Class<? extends Ingredient> i,
+    public static double getIngredient(Class<? extends Ingredient> i,
             final float need,
             boolean get) throws NotEnoughIngredientException
     {
         try
         {
             Ingredient ingredient = i.newInstance();
-            float obtained = 0f;
-            for (IngredientProvider ip
-                    : Lookup.getDefault().lookupAll(IngredientProvider.class))
+            double obtained = 0f;
+            for (IngredientStorage ip
+                    : Lookup.getDefault().lookupAll(IngredientStorage.class))
             {
-                obtained = get ? ip.getIngredient(i, need)
-                        : ip.hasIngredient(i, need);
+                obtained = get ? ip.getItem(i, need)
+                        : ip.hasItem(i, need);
                 if (get && obtained > 0)
                 {
                     LOG.log(Level.INFO, "Obtained {0} {1} of {2} from {3}",
@@ -160,10 +160,10 @@ public class Util
         {
             Equipment equipment = e.newInstance();
             int obtained = 0;
-            for (EquipmentProvider ip
-                    : Lookup.getDefault().lookupAll(EquipmentProvider.class))
+            for (KitchenStorage ip
+                    : Lookup.getDefault().lookupAll(KitchenStorage.class))
             {
-                obtained += ip.getEquipment(e, need);
+                obtained += ip.getItem(e, need);
                 if (obtained > 0)
                 {
                     LOG.log(Level.INFO, "Obtained {0} {1} from {2}",
@@ -202,13 +202,13 @@ public class Util
                         amount, equip.getName()
                     });
             boolean stored = false;
-            for (EquipmentProvider ip
-                    : Lookup.getDefault().lookupAll(EquipmentProvider.class))
+            for (KitchenStorage ip
+                    : Lookup.getDefault().lookupAll(KitchenStorage.class))
             {
                 if (ip.getEmptySpace() > 0)
                 {
                     //Enough space, stoare all of it.
-                    ip.addEquipment(i, amount);
+                    ip.addItem(i, amount);
                     stored = true;
                     break;
                 }

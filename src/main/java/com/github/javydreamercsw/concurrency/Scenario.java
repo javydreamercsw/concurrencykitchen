@@ -57,4 +57,11 @@ public interface Scenario
      * @param chef cook to add.
      */
     public void addCook(Cook chef);
+
+    /**
+     * Add listener to the scenario
+     *
+     * @param listener
+     */
+    public void addListener(ScenarioListener listener);
 }

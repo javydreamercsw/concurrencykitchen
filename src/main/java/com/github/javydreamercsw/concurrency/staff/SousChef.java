@@ -33,7 +33,7 @@ import com.github.javydreamercsw.concurrency.exception.NotEnoughIngredientExcept
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public class SousChef extends Cook implements EmployeeListener
+public class SousChef extends Cook implements EmployeeListener, SupervisorListener
 {
 
     private final Map<Class<? extends Ingredient>, Float> WAITING
@@ -71,6 +71,7 @@ public class SousChef extends Cook implements EmployeeListener
      * @param i ingredient needed.
      * @param need amount needed.
      */
+    @Override
     public synchronized void notifyNeed(Class<? extends Ingredient> i,
             float need)
     {
@@ -90,9 +91,8 @@ public class SousChef extends Cook implements EmployeeListener
 
     public void addStaff(Cook cook)
     {
-        cook.setManager(this);
         cooks.add(cook);
-        cook.addListener(this);
+        cook.addListener((EmployeeListener) this);
     }
 
     public void cook()
@@ -116,29 +116,34 @@ public class SousChef extends Cook implements EmployeeListener
             }
             while (!recipes.isEmpty())
             {
-                if (!idleChefs.isEmpty())
-                {
-                    //Assign a cook
-                    Cook chef = idleChefs.remove();
-                    busyChefs.add(chef);
-                    chef.addRecipe(recipes.remove(0));
-                    chef.start();
-                } else
-                {
-                    try
-                    {
-                        speakout("Waiting for a free cook...");
-                        Thread.sleep(10000);
-                    } catch (InterruptedException ex)
-                    {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
+                assignToCook(recipes.remove(0));
             }
         } catch (NotEnoughIngredientException ex)
         {
             LOG.log(Level.SEVERE, null, ex);
             cleanup();
+        }
+    }
+
+    private void assignToCook(Recipe r)
+    {
+        if (!idleChefs.isEmpty())
+        {
+            //Assign a cook
+            Cook chef = idleChefs.remove();
+            busyChefs.add(chef);
+            chef.addRecipe(r);
+            chef.start();
+        } else
+        {
+            try
+            {
+                speakout("Waiting for a free cook...");
+                Thread.sleep(10000);
+            } catch (InterruptedException ex)
+            {
+                LOG.log(Level.SEVERE, null, ex);
+            }
         }
     }
 
@@ -148,6 +153,7 @@ public class SousChef extends Cook implements EmployeeListener
         recipes.add(r);
     }
 
+    @Override
     public void notifyException(Exception ex)
     {
         //Got an exception, stop execution.

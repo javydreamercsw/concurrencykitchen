@@ -43,20 +43,16 @@ public class Cook extends Thread
             = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<EmployeeListener> listeners
             = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<SupervisorListener> slisteners
+            = new ConcurrentLinkedQueue<>();
     private final String name;
     private static final Logger LOG
             = Logger.getLogger(Cook.class.getName());
-    private SousChef manager;
     private boolean cook = true;
 
     public Cook(String name)
     {
         this.name = name;
-    }
-
-    public void setManager(SousChef m)
-    {
-        this.manager = m;
     }
 
     private long cook(Recipe recipe) throws MissingStorageException,
@@ -103,30 +99,8 @@ public class Cook extends Thread
                 for (Entry<Class<? extends ProcessedIngredient>, Float> entry
                         : rs.getOutput().entrySet())
                 {
-                    Float amountMade = entry.getValue();
-                    Float leftover = 0f;
-                    if (manager != null)
-                    {
-                        if (manager.isWaiting(entry.getKey()))
-                        {
-                            leftover = amountMade
-                                    - manager.getAmountWaiting(entry.getKey());
-                            if (leftover < 0)
-                            {
-                                //We need to make more
-                                manager.notifyNeed(entry.getKey(), leftover * -1);
-                            }
-                        }
-                    } else
-                    {
-                        //Everything is surplus
-                        leftover = amountMade;
-                    }
-                    if (leftover > 0)
-                    {
-                        //Storing surplus
-                        Util.storeIngredient(entry.getKey(), entry.getValue());
-                    }
+                    //Storing surplus
+                    Util.storeIngredient(entry.getKey(), entry.getValue());
                 }
             }
         }
@@ -150,7 +124,7 @@ public class Cook extends Thread
                 timeElapsed += cook(current);
             } catch (NotEnoughIngredientException | InterruptedException | MissingStorageException | NotEnoughEquipmentException ex)
             {
-                manager.notifyException(ex);
+                notifyException(ex);
                 break;
             }
         }
@@ -204,25 +178,14 @@ public class Cook extends Thread
                                 + ingredient.getName());
                         ProcessedIngredient pi = (ProcessedIngredient) ingredient;
                         missing.add(pi.getRecipe());
-                        if (manager != null)
-                        {
-                            //Let the manager know
-                            manager.notifyNeed(pi.getClass(), need);
-                        } else
+                        if (listeners.isEmpty())
                         {
                             //I have to do it myself
                             addRecipe(pi.getRecipe());
                         }
                     } else
                     {
-                        if (manager != null)
-                        {
-                            //Let the manager know
-                            manager.notifyNeed(entry.getKey(), need);
-                        } else
-                        {
-                            throw new NotEnoughIngredientException(ingredient);
-                        }
+                        notifyNeed(entry.getKey(), need);
                     }
                 }
             } catch (InstantiationException | IllegalAccessException ex)
@@ -268,11 +231,48 @@ public class Cook extends Thread
         listeners.add(listener);
     }
 
+    public void addListener(SupervisorListener listener)
+    {
+        slisteners.add(listener);
+    }
+
     protected void cleanup()
     {
         listeners.forEach(l ->
         {
             l.taskDone(this);
         });
+    }
+
+    private boolean notifyException(Exception ex)
+    {
+        boolean notified = false;
+        for (SupervisorListener l : slisteners)
+        {
+            l.notifyException(ex);
+            notified = true;
+        }
+        return notified;
+    }
+
+    private void notifyNeed(Class<? extends Ingredient> i, float need)
+            throws NotEnoughIngredientException
+    {
+        boolean notified = false;
+        for (SupervisorListener l : slisteners)
+        {
+            l.notifyNeed(i, need);
+            notified = true;
+        }
+        if (!notified)
+        {
+            try
+            {
+                throw new NotEnoughIngredientException(i.newInstance());
+            } catch (InstantiationException | IllegalAccessException ex)
+            {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
     }
 }

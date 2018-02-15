@@ -15,10 +15,15 @@
  */
 package com.github.javydreamercsw.concurrency.equipment;
 
+import org.openide.util.lookup.ServiceProvider;
+
+import com.github.javydreamercsw.concurrency.Equipment;
+
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
+@ServiceProvider(service = Equipment.class)
 public class Oven extends AbstractEquipment
 {
 

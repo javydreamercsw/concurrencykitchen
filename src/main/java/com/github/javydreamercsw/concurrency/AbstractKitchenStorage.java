@@ -47,7 +47,8 @@ public abstract class AbstractKitchenStorage<T> implements KitchenStorage<T>
                 return storage.put(clazz, new Double(0));
             } else
             {
-                return storage.put(clazz, storage.get(clazz) - amount);
+                storage.put(clazz, storage.get(clazz) - amount);
+                return amount;
             }
         } else
         {

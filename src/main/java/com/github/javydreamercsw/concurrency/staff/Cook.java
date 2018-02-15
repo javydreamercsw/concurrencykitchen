@@ -103,6 +103,14 @@ public class Cook extends Thread
                     Util.storeIngredient(entry.getKey(), entry.getValue());
                 }
             }
+            if (rs.getRequiredEquipment() != null)
+            {
+                //Return equipment to storage.
+                for (Class<? extends Equipment> e : rs.getRequiredEquipment())
+                {
+                    Util.storeEquipment(e, 1);
+                }
+            }
         }
         speakout("Time elapsed: "
                 + Util.getTimeReadable(timeElapsed));

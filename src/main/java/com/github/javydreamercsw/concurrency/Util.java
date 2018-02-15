@@ -196,7 +196,7 @@ public class Util
         try
         {
             Equipment equip = i.newInstance();
-            LOG.log(Level.FINE, "Storing: {0} of {1}",
+            LOG.log(Level.INFO, "Storing: {0} of {1}",
                     new Object[]
                     {
                         amount, equip.getName()

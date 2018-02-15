@@ -172,6 +172,7 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
     @Override
     public void taskDone(Cook c)
     {
+        speakout(c.getCookName() + " is done with his task.");
         busyChefs.remove(c);
         //Create a new one with the same name
         idleChefs.add(new Cook(c.getCookName()));

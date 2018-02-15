@@ -72,18 +72,36 @@ public class Main
         @Override
         public void run()
         {
-            TreeMap<Integer, ArrayList<Scenario>> options = new TreeMap<>();
-            Lookup.getDefault().lookupAll(Scenario.class).forEach(s ->
-            {
-                if (!options.containsKey(s.getChapter()))
-                {
-                    options.put(s.getChapter(), new ArrayList<>());
-                }
-                options.get(s.getChapter()).add(s);
-            });
+            showMenu();
+        }
 
-            while (isRun())
+        @Override
+        public synchronized void scenarioDone()
+        {
+            try
             {
+                Thread.sleep(1000);
+                showMenu();
+            } catch (InterruptedException ex)
+            {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        private void showMenu()
+        {
+            TOP:
+            while (true)
+            {
+                TreeMap<Integer, ArrayList<Scenario>> options = new TreeMap<>();
+                Lookup.getDefault().lookupAll(Scenario.class).forEach(s ->
+                {
+                    if (!options.containsKey(s.getChapter()))
+                    {
+                        options.put(s.getChapter(), new ArrayList<>());
+                    }
+                    options.get(s.getChapter()).add(s);
+                });
                 System.out.println("Available Chapters:");
                 options.entrySet().forEach((entry) ->
                 {
@@ -129,46 +147,13 @@ public class Main
                                 {
                                     Scenario s = group.get(option - 1);
                                     s.addListener(this);
-                                    setRun(false);
                                     s.cook();
-                                    while (!isRun())
-                                    {
-                                        try
-                                        {
-                                            Thread.sleep(100);
-                                        } catch (InterruptedException ex)
-                                        {
-                                            LOG.log(Level.SEVERE, null, ex);
-                                        }
-                                    }
+                                    break TOP;
                                 }
-                                break;
                         }
                     }
                 }
             }
-        }
-
-        @Override
-        public synchronized void scenarioDone()
-        {
-            setRun(true);
-        }
-
-        /**
-         * @return the run
-         */
-        public synchronized boolean isRun()
-        {
-            return run;
-        }
-
-        /**
-         * @param run the run to set
-         */
-        public synchronized void setRun(boolean run)
-        {
-            this.run = run;
         }
     }
 }

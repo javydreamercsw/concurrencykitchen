@@ -37,12 +37,6 @@ public abstract class AbstractScenario implements Scenario, EmployeeListener
     private final ConcurrentLinkedQueue<ScenarioListener> listeners
             = new ConcurrentLinkedQueue<>();
 
-    public AbstractScenario()
-    {
-        //Wipe out storage
-
-    }
-
     @Override
     public final void addRecipe(Recipe r)
     {
@@ -52,11 +46,11 @@ public abstract class AbstractScenario implements Scenario, EmployeeListener
     @Override
     public void cook()
     {
+        chef.addListener(this);
         while (!recipes.isEmpty())
         {
             chef.addRecipe(recipes.remove());
         }
-        chef.addListener(this);
         chef.cook();
     }
 
@@ -76,7 +70,7 @@ public abstract class AbstractScenario implements Scenario, EmployeeListener
     }
 
     @Override
-    public void taskDone(Cook c)
+    public void taskDone(Cook c, long time)
     {
         listeners.forEach(l ->
         {

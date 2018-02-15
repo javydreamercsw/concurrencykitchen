@@ -136,9 +136,7 @@ public class Cook extends Thread
                 break;
             }
         }
-        speakout("Total time elapsed: "
-                + Util.getTimeReadable(timeElapsed));
-        cleanup();
+        cleanup(timeElapsed);
     }
 
     /**
@@ -251,11 +249,11 @@ public class Cook extends Thread
         slisteners.add(listener);
     }
 
-    protected void cleanup()
+    protected void cleanup(long totalTime)
     {
         listeners.forEach(l ->
         {
-            l.taskDone(this);
+            l.taskDone(this, totalTime);
         });
     }
 

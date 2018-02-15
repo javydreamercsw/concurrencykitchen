@@ -80,4 +80,10 @@ public abstract class AbstractKitchenStorage<T> implements KitchenStorage<T>
             return 0;
         }
     }
+
+    @Override
+    public void clean()
+    {
+        storage.clear();
+    }
 }

@@ -207,10 +207,13 @@ public class Util
             {
                 if (ip.getEmptySpace() > 0)
                 {
-                    //Enough space, stoare all of it.
-                    ip.addItem(i, amount);
-                    stored = true;
-                    break;
+                    if (!(ip instanceof IngredientStorage))
+                    {
+                        //Enough space, stoare all of it.
+                        ip.addItem(i, amount);
+                        stored = true;
+                        break;
+                    }
                 }
             }
             if (!stored)
@@ -222,5 +225,13 @@ public class Util
         {
             LOG.log(Level.SEVERE, null, ex);
         }
+    }
+
+    public static void cleanStorage()
+    {
+        Lookup.getDefault().lookupAll(KitchenStorage.class).forEach((ip) ->
+        {
+            ip.clean();
+        });
     }
 }

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.openide.util.Lookup;
@@ -39,13 +38,7 @@ public class Main
      */
     public static void main(String[] args)
     {
-        if (args.length > 0)
-        {
-
-        } else
-        {
-            new Menu().start();
-        }
+        new Menu().start();
     }
 
     /**
@@ -67,8 +60,6 @@ public class Main
     private static class Menu extends Thread implements ScenarioListener
     {
 
-        private boolean run = true;
-
         @Override
         public void run()
         {
@@ -78,79 +69,79 @@ public class Main
         @Override
         public synchronized void scenarioDone()
         {
-            try
-            {
-                Thread.sleep(1000);
-                showMenu();
-            } catch (InterruptedException ex)
-            {
-                LOG.log(Level.SEVERE, null, ex);
-            }
+            showMenu();
         }
 
         private void showMenu()
         {
-            TOP:
-            while (true)
+            TreeMap<Integer, ArrayList<Scenario>> options = new TreeMap<>();
+            Lookup.getDefault().lookupAll(Scenario.class).forEach(s ->
             {
-                TreeMap<Integer, ArrayList<Scenario>> options = new TreeMap<>();
-                Lookup.getDefault().lookupAll(Scenario.class).forEach(s ->
+                if (!options.containsKey(s.getChapter()))
                 {
-                    if (!options.containsKey(s.getChapter()))
-                    {
-                        options.put(s.getChapter(), new ArrayList<>());
-                    }
-                    options.get(s.getChapter()).add(s);
-                });
-                System.out.println("Available Chapters:");
-                options.entrySet().forEach((entry) ->
-                {
-                    System.out.println("\t" + entry.getKey() + ") Chapter "
-                            + entry.getKey() + ": "
-                            + entry.getValue().size() + " scenario(s)");
-                });
+                    options.put(s.getChapter(), new ArrayList<>());
+                }
+                options.get(s.getChapter()).add(s);
+            });
+            System.out.println("Available Chapters:");
+            options.entrySet().forEach((entry) ->
+            {
+                System.out.println("\t" + entry.getKey() + ") Chapter "
+                        + entry.getKey() + ": "
+                        + entry.getValue().size() + " scenario(s)");
+            });
 
-                System.out.println("\tq) quit");
+            System.out.println("\tq) quit");
 
-                Scanner scanner = new Scanner(System.in);
-                String selection = scanner.next().trim().toLowerCase();
-                if (selection.equals("q"))
-                {
-                    System.out.println("Exiting");
-                    System.exit(0);
+            Scanner scanner = new Scanner(System.in);
+            String selection = scanner.next().trim().toLowerCase();
+            if (selection.equals("q"))
+            {
+                System.out.println("Exiting");
+                System.exit(0);
+            } else
+            {
+                int count = 1;
+                System.out.println("Select a scenario:");
+                List<Scenario> group = options.get(Integer.valueOf(selection));
+                if (group == null)
+                {//Wrong selection
+                    showMenu();
                 } else
                 {
-                    OUTER:
-                    while (true)
+                    for (Scenario s : group)
                     {
-                        int count = 1;
-                        System.out.println("Select a scenario:");
-                        List<Scenario> group = options.get(Integer.valueOf(selection));
-                        for (Scenario s : group)
-                        {
-                            System.out.println("\t" + count + ") " + s.getName());
-                            count++;
-                        }
-                        System.out.println("\tb) back");
-                        System.out.println("\tq) quit");
-                        String subselection = scanner.next().trim().toLowerCase();
-                        switch (subselection)
-                        {
-                            case "b":
-                                break OUTER;
-                            case "q":
-                                System.out.println("Exiting");
-                                System.exit(0);
-                            default:
-                                Integer option = Integer.valueOf(subselection);
-                                System.out.println("Selected " + option);
+                        System.out.println("\t" + count + ") "
+                                + s.getName());
+                        count++;
+                    }
+                    System.out.println("\tb) back");
+                    System.out.println("\tq) quit");
+                    String subselection = scanner.next().trim().toLowerCase();
+                    switch (subselection)
+                    {
+                        case "b":
+                            showMenu();
+                            break;
+                        case "q":
+                            System.out.println("Exiting");
+                            System.exit(0);
+                        default:
+                            Integer option = Integer.valueOf(subselection);
+                            {
+                                //Wipe out storage
+                                Util.cleanStorage();
+                                if (option - 1 >= group.size())
+                                {
+                                    showMenu();
+                                } else
                                 {
                                     Scenario s = group.get(option - 1);
                                     s.addListener(this);
                                     s.cook();
-                                    break TOP;
                                 }
-                        }
+                                break;
+                            }
                     }
                 }
             }

@@ -69,4 +69,9 @@ public interface KitchenStorage<T>
      * @return the amount available in this storage
      */
     double hasItem(Class<? extends T> clazz, double amount);
+
+    /**
+     * Remove everything from storage.
+     */
+    void clean();
 }

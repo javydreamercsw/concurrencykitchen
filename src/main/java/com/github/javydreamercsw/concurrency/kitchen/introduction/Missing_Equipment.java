@@ -40,9 +40,9 @@ public class Missing_Equipment extends AbstractScenario
     private static final Logger LOG
             = Logger.getLogger(Missing_Equipment.class.getName());
 
-    public Missing_Equipment()
+    @Override
+    public void cook()
     {
-        super();
         //Add enough ingredients to the pantry.
         Lookup.getDefault().lookupAll(Ingredient.class).forEach(i ->
         {
@@ -57,6 +57,7 @@ public class Missing_Equipment extends AbstractScenario
         );
         addRecipe(new Separated_Egg_Recipe());
         addCook(new Cook("Roberto"));
+        super.cook();
     }
 
     @Override

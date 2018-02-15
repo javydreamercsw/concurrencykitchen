@@ -41,9 +41,9 @@ public class Easy_Recipe extends AbstractScenario
     private static final Logger LOG
             = Logger.getLogger(Easy_Recipe.class.getName());
 
-    public Easy_Recipe()
+    @Override
+    public void cook()
     {
-        super();
         try
         {
             //Add enough ingredients to the pantry.
@@ -51,7 +51,7 @@ public class Easy_Recipe extends AbstractScenario
             {
                 try
                 {
-                    Util.storeIngredient(i.getClass(), 100);
+                    Util.storeIngredient(i.getClass(), 1);
                 } catch (MissingStorageException ex)
                 {
                     LOG.log(Level.SEVERE, null, ex);
@@ -62,6 +62,7 @@ public class Easy_Recipe extends AbstractScenario
             Util.storeEquipment(Bowl.class, 1);
             addRecipe(new Separated_Egg_Recipe());
             addCook(new Cook("Juan"));
+            super.cook();
         } catch (MissingStorageException ex)
         {
             LOG.log(Level.SEVERE, null, ex);

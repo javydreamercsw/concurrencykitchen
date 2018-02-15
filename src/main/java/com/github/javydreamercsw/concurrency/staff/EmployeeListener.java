@@ -26,6 +26,7 @@ public interface EmployeeListener
      * Let listeners know you are done.
      *
      * @param c Cook that finished.
+     * @param time Amount of time the task took.
      */
-    void taskDone(Cook c);
+    void taskDone(Cook c, long time);
 }

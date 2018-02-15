@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import com.github.javydreamercsw.concurrency.Ingredient;
 import com.github.javydreamercsw.concurrency.ProcessedIngredient;
 import com.github.javydreamercsw.concurrency.Recipe;
+import com.github.javydreamercsw.concurrency.Util;
 import com.github.javydreamercsw.concurrency.exception.NotEnoughIngredientException;
 
 /**
@@ -40,12 +41,11 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
             = new HashMap<>();
     private final List<Recipe> recipes
             = Collections.synchronizedList(new ArrayList());
-    private final ConcurrentLinkedQueue<Cook> cooks
-            = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<Cook> busyChefs
             = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<Cook> idleChefs
             = new ConcurrentLinkedQueue<>();
+    private long totalTime = 0;
 
     private static final Logger LOG
             = Logger.getLogger(SousChef.class.getName());
@@ -91,42 +91,39 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
 
     public void addStaff(Cook cook)
     {
-        cooks.add(cook);
+        idleChefs.add(cook);
         cook.addListener((EmployeeListener) this);
     }
 
     public void cook()
     {
-        //Al chefs are set to idle
-        while (!cooks.isEmpty())
+        if (!recipes.isEmpty())
         {
-            idleChefs.add(cooks.remove());
+            Recipe next = recipes.get(0);
+            //Check if there are other recipes that needs to be done before
+            List<Recipe> missing = new ArrayList<>();
+            try
+            {
+                missing.addAll(analyzeIngredients(next, true));
+            } catch (NotEnoughIngredientException ex)
+            {
+                speakout("Not enough ingredients!");
+            }
+            while (!missing.isEmpty())
+            {
+                //Insert them prior the real one.
+                Recipe m = missing.remove(0);
+                speakout("Need to prepare: " + m.getName());
+                recipes.add(0, m);
+            }
+            while (!recipes.isEmpty())
+            {
+                assignToCook(recipes.remove(0));
+            }
         }
-        Recipe next = recipes.get(0);
-        //Check if there are other recipes that needs to be done before
-        List<Recipe> missing = new ArrayList<>();
-        try
-        {
-            missing.addAll(analyzeIngredients(next, true));
-        } catch (NotEnoughIngredientException ex)
-        {
-            speakout("Not enough ingredients!");
-        }
-        while (!missing.isEmpty())
-        {
-            //Insert them prior the real one.
-            Recipe m = missing.remove(0);
-            speakout("Need to prepare: " + m.getName());
-            recipes.add(0, m);
-        }
-        while (!recipes.isEmpty())
-        {
-            assignToCook(recipes.remove(0));
-        }
-        cleanup();
     }
 
-    private void assignToCook(Recipe r)
+    private synchronized void assignToCook(Recipe r)
     {
         if (!idleChefs.isEmpty())
         {
@@ -137,15 +134,7 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
             chef.start();
         } else
         {
-            try
-            {
-                speakout("Waiting for a free cook...");
-                Thread.sleep(10000);
-                assignToCook(r);
-            } catch (InterruptedException ex)
-            {
-                LOG.log(Level.SEVERE, null, ex);
-            }
+            recipes.add(0, r);
         }
     }
 
@@ -170,15 +159,19 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
     }
 
     @Override
-    public void taskDone(Cook c)
+    public void taskDone(Cook c, long time)
     {
         speakout(c.getCookName() + " is done with his task.");
+        totalTime += time;
         busyChefs.remove(c);
         //Create a new one with the same name
-        idleChefs.add(new Cook(c.getCookName()));
+        addStaff(new Cook(c.getCookName()));
+        cook();
         if (busyChefs.isEmpty())
         {
-            cleanup();
+            speakout("Total time elapsed: "
+                    + Util.getTimeReadable(totalTime));
+            cleanup(totalTime);
         }
     }
 }

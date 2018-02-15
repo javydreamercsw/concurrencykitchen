@@ -158,7 +158,6 @@ public class SousChef extends Cook implements EmployeeListener
             cook.stopCooking();
         });
         speakout("Done!");
-        System.exit(0);
     }
 
     @Override

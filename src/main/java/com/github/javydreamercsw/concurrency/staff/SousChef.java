@@ -97,32 +97,33 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
 
     public void cook()
     {
+        //Al chefs are set to idle
+        while (!cooks.isEmpty())
+        {
+            idleChefs.add(cooks.remove());
+        }
+        Recipe next = recipes.get(0);
+        //Check if there are other recipes that needs to be done before
+        List<Recipe> missing = new ArrayList<>();
         try
         {
-            //Al chefs are set to idle
-            while (!cooks.isEmpty())
-            {
-                idleChefs.add(cooks.remove());
-            }
-            Recipe next = recipes.get(0);
-            //Check if there are other recipes that needs to be done before
-            List<Recipe> missing = analyzeIngredients(next, true);
-            while (!missing.isEmpty())
-            {
-                //Insert them prior the real one.
-                Recipe m = missing.remove(0);
-                speakout("Need to prepare: " + m.getName());
-                recipes.add(0, m);
-            }
-            while (!recipes.isEmpty())
-            {
-                assignToCook(recipes.remove(0));
-            }
+            missing.addAll(analyzeIngredients(next, true));
         } catch (NotEnoughIngredientException ex)
         {
-            LOG.log(Level.SEVERE, null, ex);
-            cleanup();
+            speakout("Not enough ingredients!");
         }
+        while (!missing.isEmpty())
+        {
+            //Insert them prior the real one.
+            Recipe m = missing.remove(0);
+            speakout("Need to prepare: " + m.getName());
+            recipes.add(0, m);
+        }
+        while (!recipes.isEmpty())
+        {
+            assignToCook(recipes.remove(0));
+        }
+        cleanup();
     }
 
     private void assignToCook(Recipe r)
@@ -140,6 +141,7 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
             {
                 speakout("Waiting for a free cook...");
                 Thread.sleep(10000);
+                assignToCook(r);
             } catch (InterruptedException ex)
             {
                 LOG.log(Level.SEVERE, null, ex);

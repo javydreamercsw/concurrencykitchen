@@ -24,8 +24,19 @@ import com.github.javydreamercsw.concurrency.Ingredient;
 public class NotEnoughIngredientException extends Exception
 {
 
+    private final Ingredient ingredient;
+
     public NotEnoughIngredientException(Ingredient i)
     {
         super("Not enough " + i.getName() + "!");
+        this.ingredient = i;
+    }
+
+    /**
+     * @return the i
+     */
+    public Ingredient getIngredient()
+    {
+        return ingredient;
     }
 }

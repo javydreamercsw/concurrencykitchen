@@ -150,7 +150,8 @@ public class Cook extends Thread
      * @return List of missing recipes.
      * @throws NotEnoughIngredientException
      */
-    protected List<Recipe> analyzeIngredients(Recipe r, boolean check) throws NotEnoughIngredientException
+    protected List<Recipe> analyzeIngredients(Recipe r, boolean check)
+            throws NotEnoughIngredientException
     {
         List<Recipe> missing = new ArrayList<>();
         speakout("Analyzing recipe: " + r.getName());
@@ -168,7 +169,13 @@ public class Cook extends Thread
                 Ingredient ingredient = i.newInstance();
                 float need = entry.getValue();
                 //Check if there's some in storage
-                need -= check ? Util.hasIngredient(i, need) : Util.getIngredient(i, need);
+                try
+                {
+                    need -= check ? Util.hasIngredient(i, need) : Util.getIngredient(i, need);
+                } catch (NotEnoughIngredientException ex)
+                {
+                    //Do nothing. It'll be catched in the next statement.
+                }
                 if (need > 0)
                 {
                     //Not in the storage, if it's a processed ingredient we might have some chance

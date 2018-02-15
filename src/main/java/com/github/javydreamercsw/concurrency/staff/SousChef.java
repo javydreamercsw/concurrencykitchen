@@ -138,6 +138,7 @@ public class SousChef extends Cook implements EmployeeListener
         } catch (NotEnoughIngredientException ex)
         {
             LOG.log(Level.SEVERE, null, ex);
+            cleanup();
         }
     }
 

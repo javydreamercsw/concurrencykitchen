@@ -83,4 +83,10 @@ public abstract class AbstractScenario implements Scenario, EmployeeListener
             l.scenarioDone();
         });
     }
+
+    @Override
+    public String getName()
+    {
+        return getClass().getSimpleName().replaceAll("_", " ");
+    }
 }

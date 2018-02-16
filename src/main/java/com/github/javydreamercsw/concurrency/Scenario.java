@@ -16,6 +16,7 @@
 package com.github.javydreamercsw.concurrency;
 
 import com.github.javydreamercsw.concurrency.staff.Cook;
+import com.github.javydreamercsw.concurrency.staff.SousChef;
 
 /**
  * This represents a scenario for the different chapters in the book.
@@ -64,4 +65,11 @@ public interface Scenario
      * @param listener
      */
     public void addListener(ScenarioListener listener);
+
+    /**
+     * Set the sous chef for the scenario.
+     *
+     * @param chef
+     */
+    public abstract void setChef(SousChef chef);
 }

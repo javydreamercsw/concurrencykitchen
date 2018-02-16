@@ -36,7 +36,7 @@ import com.github.javydreamercsw.concurrency.exception.NotEnoughIngredientExcept
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public class Cook extends Thread
+public class Cook extends Thread implements ICook
 {
 
     private final ConcurrentLinkedQueue<Recipe> recipes
@@ -55,7 +55,8 @@ public class Cook extends Thread
         this.name = name;
     }
 
-    private long cook(Recipe recipe) throws MissingStorageException,
+    @Override
+    public long cook(Recipe recipe) throws MissingStorageException,
             InterruptedException, NotEnoughIngredientException,
             NotEnoughEquipmentException
     {
@@ -132,7 +133,7 @@ public class Cook extends Thread
                 timeElapsed += cook(current);
             } catch (NotEnoughIngredientException | InterruptedException | MissingStorageException | NotEnoughEquipmentException ex)
             {
-                notifyException(ex);
+                notifyExceptionToSupervisors(ex);
                 break;
             }
         }
@@ -142,6 +143,7 @@ public class Cook extends Thread
     /**
      * @return the name
      */
+    @Override
     public String getCookName()
     {
         return name;
@@ -156,7 +158,8 @@ public class Cook extends Thread
      * @return List of missing recipes.
      * @throws NotEnoughIngredientException
      */
-    protected List<Recipe> analyzeIngredients(Recipe r, boolean check)
+    @Override
+    public List<Recipe> analyzeIngredients(Recipe r, boolean check)
             throws NotEnoughIngredientException
     {
         List<Recipe> missing = new ArrayList<>();
@@ -198,7 +201,7 @@ public class Cook extends Thread
                         }
                     } else
                     {
-                        notifyNeed(entry.getKey(), need);
+                        notifyNeedToSupervisors(entry.getKey(), need);
                     }
                 }
             } catch (InstantiationException | IllegalAccessException ex)
@@ -219,37 +222,44 @@ public class Cook extends Thread
         return missing;
     }
 
+    @Override
     public synchronized void addRecipe(Recipe r)
     {
         recipes.add(r);
     }
 
+    @Override
     public void speakout(String s)
     {
         System.out.println(getCookName() + ": " + s);
     }
 
+    @Override
     public synchronized void stopCooking()
     {
         cook = false;
     }
 
+    @Override
     public synchronized boolean shouldCook()
     {
         return cook;
     }
 
+    @Override
     public void addListener(EmployeeListener listener)
     {
         listeners.add(listener);
     }
 
+    @Override
     public void addListener(SupervisorListener listener)
     {
         slisteners.add(listener);
     }
 
-    protected void cleanup(long totalTime)
+    @Override
+    public void cleanup(long totalTime)
     {
         listeners.forEach(l ->
         {
@@ -257,7 +267,8 @@ public class Cook extends Thread
         });
     }
 
-    private boolean notifyException(Exception ex)
+    @Override
+    public boolean notifyExceptionToSupervisors(Exception ex)
     {
         boolean notified = false;
         for (SupervisorListener l : slisteners)
@@ -268,7 +279,8 @@ public class Cook extends Thread
         return notified;
     }
 
-    private void notifyNeed(Class<? extends Ingredient> i, float need)
+    @Override
+    public void notifyNeedToSupervisors(Class<? extends Ingredient> i, float need)
             throws NotEnoughIngredientException
     {
         boolean notified = false;

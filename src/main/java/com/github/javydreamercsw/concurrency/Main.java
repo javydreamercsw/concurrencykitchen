@@ -16,12 +16,16 @@
 package com.github.javydreamercsw.concurrency;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.openide.util.Lookup;
+
+import com.github.javydreamercsw.concurrency.staff.SousChef;
 
 /**
  *
@@ -63,7 +67,13 @@ public class Main
         @Override
         public void run()
         {
-            showMenu();
+            try
+            {
+                showMenu();
+            } catch (Error ex)
+            {
+                LOG.log(Level.SEVERE, null, ex);
+            }
         }
 
         @Override
@@ -128,20 +138,55 @@ public class Main
                             System.exit(0);
                         default:
                             Integer option = Integer.valueOf(subselection);
+                            //Wipe out storage
+                            Util.cleanStorage();
+                            if (option - 1 >= group.size())
                             {
-                                //Wipe out storage
-                                Util.cleanStorage();
-                                if (option - 1 >= group.size())
+                                showMenu();
+                            } else
+                            {
+                                Scenario s = group.get(option - 1);
+                                s.addListener(this);
+                                System.out.println("Select a sous chef:");
+                                int scCount = 1;
+                                Collection<? extends SousChef> chefs = Lookup.getDefault().lookupAll(SousChef.class);
+                                if (chefs.size() > 1)
                                 {
-                                    showMenu();
+                                    for (SousChef sc : chefs)
+                                    {
+                                        System.out.println("\t" + scCount + ") "
+                                                + sc.toString());
+                                        scCount++;
+                                    }
+                                    System.out.println("\tb) back");
+                                    System.out.println("\tq) quit");
+                                    String chefselection = scanner.next().trim().toLowerCase();
+                                    switch (chefselection)
+                                    {
+                                        case "b":
+                                            showMenu();
+                                            break;
+                                        case "q":
+                                            System.out.println("Exiting");
+                                            System.exit(0);
+                                        default:
+                                    }
+                                    Integer coption = Integer.valueOf(chefselection);
+                                    if (coption > chefs.size())
+                                    {
+                                        showMenu();
+                                    } else
+                                    {
+                                        s.setChef((SousChef) chefs.toArray()[coption - 1]);
+                                        s.cook();
+                                    }
                                 } else
                                 {
-                                    Scenario s = group.get(option - 1);
-                                    s.addListener(this);
+                                    s.setChef((SousChef) chefs.toArray()[0]);
                                     s.cook();
                                 }
-                                break;
                             }
+                            break;
                     }
                 }
             }

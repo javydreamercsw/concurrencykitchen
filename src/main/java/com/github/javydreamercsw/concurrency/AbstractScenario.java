@@ -31,7 +31,7 @@ public abstract class AbstractScenario implements Scenario, EmployeeListener
 
     private static final Logger LOG
             = Logger.getLogger(AbstractScenario.class.getName());
-    private final SousChef chef = new SousChef("Sous Chef Pablo");
+    private SousChef chef;
     private final ConcurrentLinkedQueue<Recipe> recipes
             = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<ScenarioListener> listeners
@@ -46,20 +46,20 @@ public abstract class AbstractScenario implements Scenario, EmployeeListener
     @Override
     public void cook()
     {
-        chef.addListener(this);
+        getChef().addListener(this);
         while (!recipes.isEmpty())
         {
-            chef.addRecipe(recipes.remove());
+            getChef().addRecipe(recipes.remove());
         }
-        chef.cook();
+        getChef().cook();
     }
 
     @Override
     public final synchronized void addCook(Cook cook)
     {
-        if (chef != null)
+        if (getChef() != null)
         {
-            chef.addStaff(cook);
+            getChef().addStaff(cook);
         }
     }
 
@@ -82,5 +82,21 @@ public abstract class AbstractScenario implements Scenario, EmployeeListener
     public String getName()
     {
         return getClass().getSimpleName().replaceAll("_", " ");
+    }
+
+    /**
+     * @return the chef
+     */
+    public final SousChef getChef()
+    {
+        return chef;
+    }
+
+    /**
+     * @param chef the chef to set
+     */
+    public final void setChef(SousChef chef)
+    {
+        this.chef = chef;
     }
 }

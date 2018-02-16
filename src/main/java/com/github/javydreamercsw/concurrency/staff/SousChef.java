@@ -16,11 +16,11 @@
 package com.github.javydreamercsw.concurrency.staff;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,8 +39,8 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
 
     private final Map<Class<? extends Ingredient>, Float> WAITING
             = new HashMap<>();
-    private final List<Recipe> recipes
-            = Collections.synchronizedList(new ArrayList());
+    private final LinkedBlockingDeque<Recipe> recipes
+            = new LinkedBlockingDeque<>();
     private final ConcurrentLinkedQueue<Cook> busyChefs
             = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<Cook> idleChefs
@@ -97,9 +97,9 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
 
     public void cook()
     {
-        if (!recipes.isEmpty())
+        Recipe next = recipes.peek();
+        if (next != null)
         {
-            Recipe next = recipes.get(0);
             //Check if there are other recipes that needs to be done before
             List<Recipe> missing = new ArrayList<>();
             try
@@ -114,11 +114,11 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
                 //Insert them prior the real one.
                 Recipe m = missing.remove(0);
                 speakout("Need to prepare: " + m.getName());
-                recipes.add(0, m);
+                recipes.addFirst(m);
             }
             while (!recipes.isEmpty())
             {
-                assignToCook(recipes.remove(0));
+                assignToCook(recipes.removeFirst());
             }
         }
     }
@@ -134,7 +134,7 @@ public class SousChef extends Cook implements EmployeeListener, SupervisorListen
             chef.start();
         } else
         {
-            recipes.add(0, r);
+            recipes.addFirst(r);
         }
     }
 

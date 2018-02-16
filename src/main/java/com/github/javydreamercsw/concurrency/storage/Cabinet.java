@@ -32,6 +32,6 @@ public class Cabinet extends AbstractKitchenStorage<Equipment>
     @Override
     public int getcapacity()
     {
-        return 5;
+        return 20;
     }
 }

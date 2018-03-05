@@ -31,207 +31,212 @@ import com.github.javydreamercsw.concurrency.exception.NotEnoughIngredientExcept
 public class Util
 {
 
-    private static final Logger LOG
-            = Logger.getLogger(Util.class.getName());
+  private static final Logger LOG
+          = Logger.getLogger(Util.class.getName());
 
-    private Util()
+  private Util()
+  {
+  }
+
+  public static String getTimeReadable(long time)
+  {
+    long secondsInMilli = 1000;
+    long minutesInMilli = secondsInMilli * 60;
+    long hoursInMilli = minutesInMilli * 60;
+    long daysInMilli = hoursInMilli * 24;
+
+    long elapsedDays = time / daysInMilli;
+    time = time % daysInMilli;
+
+    long elapsedHours = time / hoursInMilli;
+    time = time % hoursInMilli;
+
+    long elapsedMinutes = time / minutesInMilli;
+    time = time % minutesInMilli;
+
+    long elapsedSeconds = time / secondsInMilli;
+
+    return String.format(
+            "%d days, %d hours, %d minutes, %d seconds%n",
+            elapsedDays,
+            elapsedHours, elapsedMinutes, elapsedSeconds);
+  }
+
+  public static void storeIngredient(Class<? extends Ingredient> i, float amount)
+          throws MissingStorageException
+  {
+    try
     {
-    }
-
-    public static String getTimeReadable(long time)
-    {
-        long secondsInMilli = 1000;
-        long minutesInMilli = secondsInMilli * 60;
-        long hoursInMilli = minutesInMilli * 60;
-        long daysInMilli = hoursInMilli * 24;
-
-        long elapsedDays = time / daysInMilli;
-        time = time % daysInMilli;
-
-        long elapsedHours = time / hoursInMilli;
-        time = time % hoursInMilli;
-
-        long elapsedMinutes = time / minutesInMilli;
-        time = time % minutesInMilli;
-
-        long elapsedSeconds = time / secondsInMilli;
-
-        return String.format(
-                "%d days, %d hours, %d minutes, %d seconds%n",
-                elapsedDays,
-                elapsedHours, elapsedMinutes, elapsedSeconds);
-    }
-
-    public static void storeIngredient(Class<? extends Ingredient> i, float amount)
-            throws MissingStorageException
-    {
-        try
+      Ingredient ing = i.newInstance();
+      LOG.log(Level.FINE, "Storing: {0} {1} of {2}",
+              new Object[]
+              {
+                amount, ing.getUnits(), ing.getName()
+              });
+      boolean stored = false;
+      for (IngredientStorage ip
+              : Lookup.getDefault().lookupAll(IngredientStorage.class))
+      {
+        if (ing.requiresRefrigeration() && ip.isRefrigerated())
         {
-            Ingredient ing = i.newInstance();
-            LOG.log(Level.FINE, "Storing: {0} {1} of {2}",
-                    new Object[]
-                    {
-                        amount, ing.getUnits(), ing.getName()
-                    });
-            boolean stored = false;
-            for (IngredientStorage ip
-                    : Lookup.getDefault().lookupAll(IngredientStorage.class))
-            {
-                if (ing.requiresRefrigeration() && ip.isRefrigerated())
-                {
-                    ip.addItem(i, amount);
-                    stored = true;
-                    break;
-                } else if (!ing.requiresRefrigeration() && !ip.isRefrigerated())
-                {
-                    ip.addItem(i, amount);
-                    stored = true;
-                    break;
-                }
-            }
-            if (!stored)
-            {
-                throw new MissingStorageException("Found no storage for "
-                        + ing.getName());
-            }
-        } catch (InstantiationException | IllegalAccessException ex)
-        {
-            LOG.log(Level.SEVERE, null, ex);
+          ip.addItem(i, amount);
+          stored = true;
+          break;
         }
-    }
-
-    public static double hasIngredient(Class<? extends Ingredient> i, float need)
-            throws NotEnoughIngredientException
-    {
-        return getIngredient(i, need, false);
-    }
-
-    public static double getIngredient(Class<? extends Ingredient> i, float need)
-            throws NotEnoughIngredientException
-    {
-        return getIngredient(i, need, true);
-    }
-
-    public static double getIngredient(Class<? extends Ingredient> i,
-            final float need,
-            boolean get) throws NotEnoughIngredientException
-    {
-        try
+        else if (!ing.requiresRefrigeration() && !ip.isRefrigerated())
         {
-            Ingredient ingredient = i.newInstance();
-            double obtained = 0f;
-            for (IngredientStorage ip
-                    : Lookup.getDefault().lookupAll(IngredientStorage.class))
-            {
-                obtained = get ? ip.getItem(i, need)
-                        : ip.hasItem(i, need);
-                if (get && obtained > 0)
-                {
-                    LOG.log(Level.INFO, "Obtained {0} {1} of {2} from {3}",
-                            new Object[]
-                            {
-                                obtained,
-                                ingredient.getUnits().getName(),
-                                ingredient.getName(), ip.getName()
-                            });
-                }
-                if (obtained >= need)
-                {
-                    break;
-                }
-            }
-            if (obtained < need)
-            {
-                throw new NotEnoughIngredientException(ingredient);
-
-            }
-            return obtained;
-        } catch (InstantiationException | IllegalAccessException ex)
-        {
-            LOG.log(Level.SEVERE, null, ex);
+          ip.addItem(i, amount);
+          stored = true;
+          break;
         }
-        return 0f;
+      }
+      if (!stored)
+      {
+        throw new MissingStorageException("Found no storage for "
+                + ing.getName());
+      }
     }
-
-    public static int getEquipment(Class<? extends Equipment> e, final int need)
-            throws NotEnoughEquipmentException
+    catch (InstantiationException | IllegalAccessException ex)
     {
-        try
+      LOG.log(Level.SEVERE, null, ex);
+    }
+  }
+
+  public static double hasIngredient(Class<? extends Ingredient> i, float need)
+          throws NotEnoughIngredientException
+  {
+    return getIngredient(i, need, false);
+  }
+
+  public static double getIngredient(Class<? extends Ingredient> i, float need)
+          throws NotEnoughIngredientException
+  {
+    return getIngredient(i, need, true);
+  }
+
+  public static double getIngredient(Class<? extends Ingredient> i,
+          final float need,
+          boolean get) throws NotEnoughIngredientException
+  {
+    try
+    {
+      Ingredient ingredient = i.newInstance();
+      double obtained = 0f;
+      for (IngredientStorage ip
+              : Lookup.getDefault().lookupAll(IngredientStorage.class))
+      {
+        obtained = get ? ip.getItem(i, need)
+                : ip.hasItem(i, need);
+        if (get && obtained > 0)
         {
-            Equipment equipment = e.newInstance();
-            int obtained = 0;
-            for (KitchenStorage ip
-                    : Lookup.getDefault().lookupAll(KitchenStorage.class))
-            {
-                obtained += ip.getItem(e, need);
-                if (obtained > 0)
-                {
-                    LOG.log(Level.INFO, "Obtained {0} {1} from {2}",
-                            new Object[]
-                            {
-                                obtained,
-                                equipment.getName(), ip.getName()
-                            });
-                }
-                if (obtained >= need)
-                {
-                    break;
-                }
-            }
-            if (obtained < need)
-            {
-                throw new NotEnoughEquipmentException(equipment);
-            }
-            return obtained;
-        } catch (InstantiationException | IllegalAccessException ex)
-        {
-            LOG.log(Level.SEVERE, null, ex);
+          LOG.log(Level.INFO, "Obtained {0} {1} of {2} from {3}",
+                  new Object[]
+                  {
+                    obtained,
+                    ingredient.getUnits().getName(),
+                    ingredient.getName(), ip.getName()
+                  });
         }
-        return 0;
-    }
-
-    public static void storeEquipment(Class<? extends Equipment> i, int amount)
-            throws MissingStorageException
-    {
-        try
+        if (obtained >= need)
         {
-            Equipment equip = i.newInstance();
-            LOG.log(Level.INFO, "Storing: {0} of {1}",
-                    new Object[]
-                    {
-                        amount, equip.getName()
-                    });
-            boolean stored = false;
-            for (KitchenStorage ip
-                    : Lookup.getDefault().lookupAll(KitchenStorage.class))
-            {
-                if (ip.getEmptySpace() > 0)
-                {
-                    if (!(ip instanceof IngredientStorage))
-                    {
-                        //Enough space, stoare all of it.
-                        ip.addItem(i, amount);
-                        stored = true;
-                        break;
-                    }
-                }
-            }
-            if (!stored)
-            {
-                throw new MissingStorageException("Found no storage for "
-                        + equip.getName());
-            }
-        } catch (InstantiationException | IllegalAccessException ex)
-        {
-            LOG.log(Level.SEVERE, null, ex);
+          break;
         }
-    }
+      }
+      if (obtained < need)
+      {
+        throw new NotEnoughIngredientException(ingredient);
 
-    public static void cleanStorage()
-    {
-        Lookup.getDefault().lookupAll(KitchenStorage.class).forEach((ip) ->
-        {
-            ip.clean();
-        });
+      }
+      return obtained;
     }
+    catch (InstantiationException | IllegalAccessException ex)
+    {
+      LOG.log(Level.SEVERE, null, ex);
+    }
+    return 0f;
+  }
+
+  public static int getEquipment(Class<? extends Equipment> e, final int need)
+          throws NotEnoughEquipmentException
+  {
+    try
+    {
+      Equipment equipment = e.newInstance();
+      int obtained = 0;
+      for (KitchenStorage ip
+              : Lookup.getDefault().lookupAll(KitchenStorage.class))
+      {
+        obtained += ip.getItem(e, need);
+        if (obtained > 0)
+        {
+          LOG.log(Level.INFO, "Obtained {0} {1} from {2}",
+                  new Object[]
+                  {
+                    obtained,
+                    equipment.getName(), ip.getName()
+                  });
+        }
+        if (obtained >= need)
+        {
+          break;
+        }
+      }
+      if (obtained < need)
+      {
+        throw new NotEnoughEquipmentException(equipment);
+      }
+      return obtained;
+    }
+    catch (InstantiationException | IllegalAccessException ex)
+    {
+      LOG.log(Level.SEVERE, null, ex);
+    }
+    return 0;
+  }
+
+  public static void storeEquipment(Class<? extends Equipment> i, int amount)
+          throws MissingStorageException
+  {
+    try
+    {
+      Equipment equip = i.newInstance();
+      LOG.log(Level.FINE, "Storing: {0} of {1}",
+              new Object[]
+              {
+                amount, equip.getName()
+              });
+      boolean stored = false;
+      for (KitchenStorage ip
+              : Lookup.getDefault().lookupAll(KitchenStorage.class))
+      {
+        if (ip.getEmptySpace() > 0)
+        {
+          if (!(ip instanceof IngredientStorage))
+          {
+            //Enough space, stoare all of it.
+            ip.addItem(i, amount);
+            stored = true;
+            break;
+          }
+        }
+      }
+      if (!stored)
+      {
+        throw new MissingStorageException("Found no storage for "
+                + equip.getName());
+      }
+    }
+    catch (InstantiationException | IllegalAccessException ex)
+    {
+      LOG.log(Level.SEVERE, null, ex);
+    }
+  }
+
+  public static void cleanStorage()
+  {
+    Lookup.getDefault().lookupAll(KitchenStorage.class).forEach((ip) ->
+    {
+      ip.clean();
+    });
+  }
 }

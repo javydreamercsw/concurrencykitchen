@@ -37,6 +37,8 @@ public class Main
 
   private final static Logger LOG = Logger.getLogger(Main.class.getName());
   private boolean ready = false;
+  private final static Collection<? extends SousChef> chefs
+          = Lookup.getDefault().lookupAll(SousChef.class);
 
   /**
    * @param args the command line arguments
@@ -152,11 +154,10 @@ public class Main
               {
                 Scenario s = group.get(option - 1);
                 s.addListener(this);
-                System.out.println("Select a sous chef:");
                 int scCount = 1;
-                Collection<? extends SousChef> chefs = Lookup.getDefault().lookupAll(SousChef.class);
                 if (chefs.size() > 1)
                 {
+                  System.out.println("Select a sous chef:");
                   for (SousChef sc : chefs)
                   {
                     System.out.println("\t" + scCount + ") "
@@ -183,32 +184,58 @@ public class Main
                   }
                   else
                   {
-                    try
-                    {
-                      s.setChef((SousChef) chefs.toArray()[coption - 1]);
-                      s.cook();
-                    }
-                    catch (MissingChefException ex)
-                    {
-                      LOG.log(Level.SEVERE, null, ex);
-                    }
+                    s.setChef((SousChef) chefs.toArray()[coption - 1]);
+
                   }
                 }
                 else
                 {
-                  try
-                  {
-                    s.setChef((SousChef) chefs.toArray()[0]);
-                    s.cook();
-                  }
-                  catch (MissingChefException ex)
-                  {
-                    LOG.log(Level.SEVERE, null, ex);
-                  }
+                  s.setChef((SousChef) chefs.toArray()[0]);
+                }
+                try
+                {
+                  startCooking(s);
+                }
+                catch (MissingChefException ex)
+                {
+                  LOG.log(Level.SEVERE, null, ex);
+                  showMenu();
+                }
+                catch (Exception ex)
+                {
+                  LOG.log(Level.SEVERE, null, ex);
+                  showMenu();
                 }
               }
               break;
           }
+        }
+      }
+    }
+
+    private void startCooking(Scenario s) throws MissingChefException, Exception
+    {
+      Thread t = new Thread(() ->
+      {
+        try
+        {
+          s.cook();
+        }
+        catch (MissingChefException ex)
+        {
+          LOG.log(Level.SEVERE, null, ex);
+        }
+      });
+      t.start();
+      Scanner scanner = new Scanner(System.in);
+      if (s instanceof Cancellable)
+      {
+        System.out.println("Press any key to cancel this process!");
+        scanner.nextLine();
+        ((Cancellable) s).cancel();
+        if (t.isAlive())
+        {
+          throw new Exception(s.getChef() + " didn't stop working!");
         }
       }
     }

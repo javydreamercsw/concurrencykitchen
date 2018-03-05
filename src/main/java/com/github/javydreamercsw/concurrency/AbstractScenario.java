@@ -53,9 +53,10 @@ public abstract class AbstractScenario implements Scenario, EmployeeListener
   public void cook() throws MissingChefException
   {
     getChef().addListener(this);
-    while (!recipes.isEmpty())
+    Recipe next = null;
+    while ((next = getNextRecipe()) != null)
     {
-      getChef().addRecipe(recipes.remove());
+      getChef().addRecipe(next);
     }
     getChef().cook();
   }
@@ -69,6 +70,16 @@ public abstract class AbstractScenario implements Scenario, EmployeeListener
       setChef(new Rookie_Sous_Chef());
     }
     getChef().addStaff(cook);
+  }
+
+  /**
+   * Get the next recipe.
+   *
+   * @return
+   */
+  public Recipe getNextRecipe()
+  {
+    return recipes.isEmpty() ? null : recipes.remove();
   }
 
   @Override

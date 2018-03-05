@@ -17,8 +17,13 @@ package com.github.javydreamercsw.concurrency.scenario;
 
 import static org.testng.Assert.assertTrue;
 
-import org.openide.util.Lookup;
+import java.util.Collection;
 
+import org.openide.util.Lookup;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
+import com.github.javydreamercsw.concurrency.Cancellable;
 import com.github.javydreamercsw.concurrency.Scenario;
 import com.github.javydreamercsw.concurrency.exception.MissingChefException;
 
@@ -31,18 +36,37 @@ public class ScenarioTest
   /**
    * Test of cook method, of class Missing_Equipment.
    *
+   * @param s Scenario to test
    * @throws
    * com.github.javydreamercsw.concurrency.exception.MissingChefException
    */
-  @org.testng.annotations.Test
-  public void testCook() throws MissingChefException
+  @Test(dataProvider = "scenarios", timeOut = 10 * 1000L)
+  public void testCook(Scenario s) throws MissingChefException
   {
-    System.out.println("cook");
-    for (Scenario s : Lookup.getDefault().lookupAll(Scenario.class))
+    System.out.println("Testing scenario: " + s);
+    assertTrue(s.getBookPart() > 0);
+    s.cook();
+    if (s instanceof Cancellable)
     {
-      System.out.println("Testing scenario: " + s);
-      assertTrue(s.getBookPart() > 0);
-      s.cook();
+      ((Cancellable) s).cancel();
     }
+  }
+
+  @DataProvider()
+  public Object[][] scenarios()
+  {
+    Collection<? extends Scenario> scenarios
+            = Lookup.getDefault().lookupAll(Scenario.class);
+    Object[][] result = new Object[scenarios.size()][];
+    int i = 0;
+    for (Scenario s : scenarios)
+    {
+      result[i] = new Object[]
+      {
+        s
+      };
+      i++;
+    }
+    return result;
   }
 }

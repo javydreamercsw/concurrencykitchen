@@ -15,18 +15,40 @@
  */
 package com.github.javydreamercsw.concurrency.scenario.part2;
 
+import org.openide.util.lookup.ServiceProvider;
+
 import com.github.javydreamercsw.concurrency.AbstractScenario;
+import com.github.javydreamercsw.concurrency.Cancellable;
+import com.github.javydreamercsw.concurrency.Scenario;
+import com.github.javydreamercsw.concurrency.exception.MissingChefException;
 
 /**
+ * Implements this scenario so it can be cancellable.
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public class CancellationScenario extends AbstractScenario
+@ServiceProvider(service = Scenario.class, position = 4)
+public class Cancellation_Scenario extends AbstractScenario
+        implements Cancellable
 {
+  @Override
+  public void cook() throws MissingChefException
+  {
+    while (true)
+    {
+      //Do nothing, waiting to be cancelled.
+    }
+  }
 
   @Override
   public int getBookPart()
   {
     return 2;
+  }
+
+  @Override
+  public void cancel()
+  {
+
   }
 }

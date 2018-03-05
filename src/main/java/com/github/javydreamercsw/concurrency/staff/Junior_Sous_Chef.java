@@ -36,129 +36,132 @@ import com.github.javydreamercsw.concurrency.exception.NotEnoughIngredientExcept
 public class Junior_Sous_Chef extends Rookie_Sous_Chef
 {
 
-    private final LinkedBlockingDeque<Recipe> recipes
-            = new LinkedBlockingDeque<>();
-    private final ConcurrentLinkedQueue<ICook> busyChefs
-            = new ConcurrentLinkedQueue<>();
-    private final ConcurrentLinkedQueue<ICook> idleChefs
-            = new ConcurrentLinkedQueue<>();
+  private final LinkedBlockingDeque<Recipe> recipes
+          = new LinkedBlockingDeque<>();
+  private final ConcurrentLinkedQueue<ICook> busyChefs
+          = new ConcurrentLinkedQueue<>();
+  private final ConcurrentLinkedQueue<ICook> idleChefs
+          = new ConcurrentLinkedQueue<>();
 
-    private static final Logger LOG
-            = Logger.getLogger(Junior_Sous_Chef.class.getName());
+  private static final Logger LOG
+          = Logger.getLogger(Junior_Sous_Chef.class.getName());
 
-    public Junior_Sous_Chef()
+  public Junior_Sous_Chef()
+  {
+    super("Junior");
+  }
+
+  /**
+   * Supervisee needs something to finish the recipe.
+   *
+   * @param i ingredient needed.
+   * @param need amount needed.
+   */
+  @Override
+  public synchronized void notifyNeed(Class<? extends Ingredient> i,
+          float need)
+  {
+    try
     {
-        super("Junior");
+      if (i.isAssignableFrom(ProcessedIngredient.class))
+      {
+        ProcessedIngredient pi = (ProcessedIngredient) i.newInstance();
+        addRecipe(pi.getRecipe());
+      }
     }
-
-    /**
-     * Supervisee needs something to finish the recipe.
-     *
-     * @param i ingredient needed.
-     * @param need amount needed.
-     */
-    @Override
-    public synchronized void notifyNeed(Class<? extends Ingredient> i,
-            float need)
+    catch (InstantiationException | IllegalAccessException ex)
     {
-        try
-        {
-            if (i.isAssignableFrom(ProcessedIngredient.class))
-            {
-                ProcessedIngredient pi = (ProcessedIngredient) i.newInstance();
-                addRecipe(pi.getRecipe());
-            }
-        } catch (InstantiationException | IllegalAccessException ex)
-        {
-            LOG.log(Level.SEVERE, null, ex);
-        }
+      LOG.log(Level.SEVERE, null, ex);
     }
+  }
 
-    @Override
-    public void addStaff(ICook cook)
-    {
-        idleChefs.add(cook);
-        cook.addListener((EmployeeListener) this);
-    }
+  @Override
+  public void addStaff(ICook cook)
+  {
+    idleChefs.add(cook);
+    cook.addListener((EmployeeListener) this);
+  }
 
-    @Override
-    public void cook()
+  @Override
+  public void cook()
+  {
+    Recipe next = recipes.peek();
+    if (next != null)
     {
-        Recipe next = recipes.peek();
-        if (next != null)
-        {
-            //Check if there are other recipes that needs to be done before
-            List<Recipe> missing = new ArrayList<>();
-            try
-            {
-                missing.addAll(analyzeIngredients(next, true));
-            } catch (NotEnoughIngredientException ex)
-            {
-                speakout("Not enough ingredients!");
-            }
-            while (!missing.isEmpty())
-            {
-                //Insert them prior the real one.
-                Recipe m = missing.remove(0);
-                speakout("Need to prepare: " + m.getName());
-                recipes.addFirst(m);
-            }
-            while (!recipes.isEmpty())
-            {
-                assignToCook(recipes.removeFirst());
-            }
-        }
+      //Check if there are other recipes that needs to be done before
+      List<Recipe> missing = new ArrayList<>();
+      try
+      {
+        missing.addAll(analyzeIngredients(next, true));
+      }
+      catch (NotEnoughIngredientException ex)
+      {
+        speakout("Not enough ingredients!");
+      }
+      while (!missing.isEmpty())
+      {
+        //Insert them prior the real one.
+        Recipe m = missing.remove(0);
+        speakout("Need to prepare: " + m.getName());
+        recipes.addFirst(m);
+      }
+      while (!recipes.isEmpty())
+      {
+        assignToCook(recipes.removeFirst());
+      }
     }
+  }
 
-    private synchronized void assignToCook(Recipe r)
+  private synchronized void assignToCook(Recipe r)
+  {
+    if (!idleChefs.isEmpty())
     {
-        if (!idleChefs.isEmpty())
-        {
-            //Assign a cook
-            ICook chef = idleChefs.remove();
-            busyChefs.add(chef);
-            chef.addRecipe(r);
-            chef.run();
-        } else
-        {
-            recipes.addFirst(r);
-        }
+      //Assign a cook
+      ICook chef = idleChefs.remove();
+      busyChefs.add(chef);
+      chef.addRecipe(r);
+      chef.run();
     }
+    else
+    {
+      recipes.addFirst(r);
+    }
+  }
 
-    @Override
-    public void addRecipe(Recipe r)
-    {
-        recipes.add(r);
-    }
+  @Override
+  public void addRecipe(Recipe r)
+  {
+    recipes.add(r);
+  }
 
-    @Override
-    public void notifyException(Exception ex)
+  @Override
+  public void notifyException(Exception ex)
+  {
+    //Got an exception, stop execution.
+    LOG.log(Level.SEVERE, "Unable to prepare the recipe(s)", ex);
+    //Stop all cooks
+    speakout("Stopping the kitchen...");
+    busyChefs.forEach(cook ->
     {
-        //Got an exception, stop execution.
-        LOG.log(Level.SEVERE, "Unable to prepare the recipe(s)", ex);
-        //Stop all cooks
-        speakout("Stopping the kitchen...");
-        busyChefs.forEach(cook ->
-        {
-            cook.stopCooking();
-        });
-        speakout("Done!");
-    }
+      cook.stopCooking();
+    });
+    speakout("Done!");
+  }
 
-    @Override
-    public void taskDone(Cook c, long time)
+  @Override
+  public void taskDone(Cook c, long time)
+  {
+    speakout(c.getCookName() + " is done with his task.");
+    totalTime += time;
+    busyChefs.remove(c);
+    //Create a new one with the same name
+    addStaff(new Cook(c.getCookName()));
+    cook();
+    if (busyChefs.isEmpty())
     {
-        speakout(c.getCookName() + " is done with his task.");
-        totalTime += time;
-        busyChefs.remove(c);
-        //Create a new one with the same name
-        addStaff(new Cook(c.getCookName()));
-        cook();
-        if (busyChefs.isEmpty())
-        {
-            speakout("Total time elapsed: "
-                    + Util.getTimeReadable(totalTime));
-            cleanup(totalTime);
-        }
+      speakout("Total time elapsed: "
+              + Util.getTimeReadable(totalTime));
+      cleanup(totalTime);
     }
+  }
 }

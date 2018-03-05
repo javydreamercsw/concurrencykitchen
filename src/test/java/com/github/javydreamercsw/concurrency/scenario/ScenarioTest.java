@@ -37,8 +37,7 @@ public class ScenarioTest
    * Test of cook method, of class Missing_Equipment.
    *
    * @param s Scenario to test
-   * @throws
-   * com.github.javydreamercsw.concurrency.exception.MissingChefException
+   * @throws MissingChefException
    */
   @Test(dataProvider = "scenarios", timeOut = 10 * 1000L)
   public void testCook(Scenario s) throws MissingChefException

@@ -44,8 +44,7 @@ public interface Scenario
   /**
    * Run the scenario.
    *
-   * @throws
-   * com.github.javydreamercsw.concurrency.exception.MissingChefException
+   * @throws MissingChefException
    */
   void cook() throws MissingChefException;
 
@@ -60,8 +59,7 @@ public interface Scenario
    * Add cook to scenario.
    *
    * @param chef cook to add.
-   * @throws
-   * com.github.javydreamercsw.concurrency.exception.MissingChefException
+   * @throws MissingChefException
    */
   public void addCook(Cook chef) throws MissingChefException;
 
@@ -83,8 +81,7 @@ public interface Scenario
    * Return the chef for this scenario
    *
    * @return the chef
-   * @throws
-   * com.github.javydreamercsw.concurrency.exception.MissingChefException
+   * @throws MissingChefException
    */
   public SousChef getChef() throws MissingChefException;
 }

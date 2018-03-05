@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency.kitchen.introduction;
+package com.github.javydreamercsw.concurrency.scenario.part1;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.github.javydreamercsw.concurrency.AbstractScenario;
-import com.github.javydreamercsw.concurrency.Ingredient;
 import com.github.javydreamercsw.concurrency.Scenario;
 import com.github.javydreamercsw.concurrency.Util;
+import com.github.javydreamercsw.concurrency.equipment.Bowl;
+import com.github.javydreamercsw.concurrency.exception.MissingChefException;
 import com.github.javydreamercsw.concurrency.exception.MissingStorageException;
 import com.github.javydreamercsw.concurrency.recipe.Separated_Egg_Recipe;
 import com.github.javydreamercsw.concurrency.staff.Cook;
@@ -33,36 +33,34 @@ import com.github.javydreamercsw.concurrency.staff.Cook;
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-@ServiceProvider(service = Scenario.class, position = 2)
-public class Missing_Equipment extends AbstractScenario
+@ServiceProvider(service = Scenario.class, position = 1)
+public class Easy_Recipe extends AbstractScenario
 {
 
-    private static final Logger LOG
-            = Logger.getLogger(Missing_Equipment.class.getName());
+  private static final Logger LOG
+          = Logger.getLogger(Easy_Recipe.class.getName());
 
-    @Override
-    public void cook()
+  @Override
+  public void cook() throws MissingChefException
+  {
+    try
     {
-        //Add enough ingredients to the pantry.
-        Lookup.getDefault().lookupAll(Ingredient.class).forEach(i ->
-        {
-            try
-            {
-                Util.storeIngredient(i.getClass(), 100);
-            } catch (MissingStorageException ex)
-            {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-        }
-        );
-        addRecipe(new Separated_Egg_Recipe());
-        addCook(new Cook("Roberto"));
-        super.cook();
+      loadIngredients(1);
+      //Add a bowl
+      Util.storeEquipment(Bowl.class, 1);
+      addRecipe(new Separated_Egg_Recipe());
+      addCook(new Cook());
+      super.cook();
     }
+    catch (MissingStorageException ex)
+    {
+      LOG.log(Level.SEVERE, null, ex);
+    }
+  }
 
-    @Override
-    public int getChapter()
-    {
-        return 1;
-    }
+  @Override
+  public int getBookPart()
+  {
+    return 1;
+  }
 }

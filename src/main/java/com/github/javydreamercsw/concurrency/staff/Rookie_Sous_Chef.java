@@ -36,147 +36,150 @@ import com.github.javydreamercsw.concurrency.exception.NotEnoughIngredientExcept
 public class Rookie_Sous_Chef extends SousChef
 {
 
-    private final List<Recipe> recipes = new ArrayList<>();
-    private final List<ICook> busyChefs = new ArrayList<>();
-    private final List<ICook> idleChefs = new ArrayList<>();
-    private static final Logger LOG
-            = Logger.getLogger(Rookie_Sous_Chef.class.getName());
+  private final List<Recipe> recipes = new ArrayList<>();
+  private final List<ICook> busyChefs = new ArrayList<>();
+  private final List<ICook> idleChefs = new ArrayList<>();
+  private static final Logger LOG
+          = Logger.getLogger(Rookie_Sous_Chef.class.getName());
 
-    public Rookie_Sous_Chef(String name)
+  public Rookie_Sous_Chef(String name)
+  {
+    super(name);
+  }
+
+  public Rookie_Sous_Chef()
+  {
+    super();
+  }
+
+  @Override
+  public void addStaff(ICook cook)
+  {
+    idleChefs.add(cook);
+    cook.addListener((EmployeeListener) this);
+  }
+
+  /**
+   * Supervisee needs something to finish the recipe.
+   *
+   * @param i ingredient needed.
+   * @param need amount needed.
+   */
+  @Override
+  public synchronized void notifyNeedToSupervisors(Class<? extends Ingredient> i,
+          float need)
+  {
+    try
     {
-        super(name);
+      if (i.isAssignableFrom(ProcessedIngredient.class))
+      {
+        ProcessedIngredient pi = (ProcessedIngredient) i.newInstance();
+        addRecipe(pi.getRecipe());
+      }
     }
-
-    public Rookie_Sous_Chef()
+    catch (InstantiationException | IllegalAccessException ex)
     {
-        super("Pepe");
+      LOG.log(Level.SEVERE, null, ex);
     }
+  }
 
-    @Override
-    public void addStaff(ICook cook)
+  @Override
+  public void cook()
+  {
+    if (!recipes.isEmpty())
     {
-        idleChefs.add(cook);
-        cook.addListener((EmployeeListener) this);
-    }
-
-    /**
-     * Supervisee needs something to finish the recipe.
-     *
-     * @param i ingredient needed.
-     * @param need amount needed.
-     */
-    @Override
-    public synchronized void notifyNeedToSupervisors(Class<? extends Ingredient> i,
-            float need)
-    {
+      Recipe next = recipes.get(0);
+      if (next != null)
+      {
+        //Check if there are other recipes that needs to be done before
+        List<Recipe> missing = new ArrayList<>();
         try
         {
-            if (i.isAssignableFrom(ProcessedIngredient.class))
-            {
-                ProcessedIngredient pi = (ProcessedIngredient) i.newInstance();
-                addRecipe(pi.getRecipe());
-            }
-        } catch (InstantiationException | IllegalAccessException ex)
-        {
-            LOG.log(Level.SEVERE, null, ex);
+          missing.addAll(analyzeIngredients(next, true));
         }
-    }
-
-    @Override
-    public void cook()
-    {
-        if (!recipes.isEmpty())
+        catch (NotEnoughIngredientException ex)
         {
-            Recipe next = recipes.get(0);
-            if (next != null)
-            {
-                //Check if there are other recipes that needs to be done before
-                List<Recipe> missing = new ArrayList<>();
-                try
-                {
-                    missing.addAll(analyzeIngredients(next, true));
-                } catch (NotEnoughIngredientException ex)
-                {
-                    speakout("Not enough ingredients!");
-                }
-                while (!missing.isEmpty())
-                {
-                    //Insert them prior the real one.
-                    Recipe m = missing.remove(0);
-                    speakout("Need to prepare: " + m.getName());
-                    recipes.add(0, m);
-                }
-                while (!recipes.isEmpty())
-                {
-                    assignToCook(recipes.remove(0));
-                }
-            }
+          speakout("Not enough ingredients!");
         }
-    }
-
-    private synchronized void assignToCook(Recipe r)
-    {
-        if (!idleChefs.isEmpty())
+        while (!missing.isEmpty())
         {
-            //Assign a cook
-            ICook chef = idleChefs.get(0);
-            busyChefs.add(chef);
-            chef.addRecipe(r);
-            chef.run();
-        } else
-        {
-            recipes.add(0, r);
+          //Insert them prior the real one.
+          Recipe m = missing.remove(0);
+          speakout("Need to prepare: " + m.getName());
+          recipes.add(0, m);
         }
-    }
-
-    @Override
-    public void addRecipe(Recipe r)
-    {
-        recipes.add(r);
-    }
-
-    @Override
-    public boolean notifyExceptionToSupervisors(Exception ex)
-    {
-        //Got an exception, stop execution.
-        LOG.log(Level.SEVERE, "Unable to prepare the recipe(s)", ex);
-        //Stop all cooks
-        speakout("Stopping the kitchen...");
-        busyChefs.forEach(cook ->
+        while (!recipes.isEmpty())
         {
-            cook.stopCooking();
-        });
-        speakout("Done!");
-        return true;
-    }
-
-    @Override
-    public void taskDone(Cook c, long time)
-    {
-        speakout(c.getCookName() + " is done with his task.");
-        totalTime += time;
-        busyChefs.remove(c);
-        //Create a new one with the same name
-        addStaff(new Cook(c.getCookName()));
-        cook();
-        if (busyChefs.isEmpty())
-        {
-            speakout("Total time elapsed: "
-                    + Util.getTimeReadable(totalTime));
-            cleanup(totalTime);
+          assignToCook(recipes.remove(0));
         }
+      }
     }
+  }
 
-    @Override
-    public void notifyNeed(Class<? extends Ingredient> i, float need)
+  private synchronized void assignToCook(Recipe r)
+  {
+    if (!idleChefs.isEmpty())
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+      //Assign a cook
+      ICook chef = idleChefs.get(0);
+      busyChefs.add(chef);
+      chef.addRecipe(r);
+      chef.run();
     }
+    else
+    {
+      recipes.add(0, r);
+    }
+  }
 
-    @Override
-    public void notifyException(Exception ex)
+  @Override
+  public void addRecipe(Recipe r)
+  {
+    recipes.add(r);
+  }
+
+  @Override
+  public boolean notifyExceptionToSupervisors(Exception ex)
+  {
+    //Got an exception, stop execution.
+    LOG.log(Level.SEVERE, "Unable to prepare the recipe(s)", ex);
+    //Stop all cooks
+    speakout("Stopping the kitchen...");
+    busyChefs.forEach(cook ->
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+      cook.stopCooking();
+    });
+    speakout("Done!");
+    return true;
+  }
+
+  @Override
+  public void taskDone(Cook c, long time)
+  {
+    speakout(c.getCookName() + " is done with his task.");
+    totalTime += time;
+    busyChefs.remove(c);
+    //Create a new one with the same name
+    addStaff(new Cook(c.getCookName()));
+    cook();
+    if (busyChefs.isEmpty())
+    {
+      speakout("Total time elapsed: "
+              + Util.getTimeReadable(totalTime));
+      cleanup(totalTime);
     }
+  }
+
+  @Override
+  public void notifyNeed(Class<? extends Ingredient> i, float need)
+  {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public void notifyException(Exception ex)
+  {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
 
 }

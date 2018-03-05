@@ -13,39 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.javydreamercsw.concurrency.staff;
+package com.github.javydreamercsw.concurrency.exception;
 
 /**
  *
  * @author Javier Ortiz Bultron <javierortiz@pingidentity.com>
  */
-public abstract class SousChef extends Cook implements EmployeeListener, SupervisorListener, ICook
+public class MissingChefException extends Exception
 {
-
-  /**
-   * Variable to store elapsed time.
-   */
-  protected long totalTime = 0;
-
-  public SousChef(String name)
+  public MissingChefException()
   {
-    super(name);
+    super("Missing a chef. Need to assign a chef to the scenario prior "
+            + "to trying to cook.");
   }
-
-  public SousChef()
-  {
-    super();
-  }
-
-  /**
-   * Add a cook to your staff with you as supervisor.
-   *
-   * @param cook Cook to add.
-   */
-  public abstract void addStaff(ICook cook);
-
-  /**
-   * Manage your staff to prepare the dishes you have to do.
-   */
-  public abstract void cook();
 }

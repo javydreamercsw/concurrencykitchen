@@ -16,22 +16,33 @@
             <artifactId>org-openide-util-lookup</artifactId>
             <version>RELEASE80</version>
         </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.8.8</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ajbrown</groupId>
+            <artifactId>name-machine</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
     
     <repositories>
         <repository>
-          <id>NetBeans</id>
-          <url>http://bits.netbeans.org/maven2/</url>
-          <snapshots>
-            <enabled>true</enabled>
-            <!-- The frequency for downloading updates - can be "always", "daily" (default), "interval:XXX" (in minutes) 
-              or "never" (only if it doesn't exist locally). -->
-            <updatePolicy>always</updatePolicy>
-            <checksumPolicy>fail</checksumPolicy>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
+            <id>NetBeans</id>
+            <url>http://bits.netbeans.org/maven2/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <!-- The frequency for downloading updates - can be "always", "daily" (default), "interval:XXX" (in minutes) 
+                or "never" (only if it doesn't exist locally). -->
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
     </repositories>
 </project>

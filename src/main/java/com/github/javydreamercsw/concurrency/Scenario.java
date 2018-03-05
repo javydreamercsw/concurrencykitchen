@@ -15,6 +15,7 @@
  */
 package com.github.javydreamercsw.concurrency;
 
+import com.github.javydreamercsw.concurrency.exception.MissingChefException;
 import com.github.javydreamercsw.concurrency.staff.Cook;
 import com.github.javydreamercsw.concurrency.staff.SousChef;
 
@@ -26,50 +27,64 @@ import com.github.javydreamercsw.concurrency.staff.SousChef;
 public interface Scenario
 {
 
-    /**
-     * Scenario name.
-     *
-     * @return name
-     */
-    String getName();
+  /**
+   * Scenario name.
+   *
+   * @return name
+   */
+  String getName();
 
-    /**
-     * Get chapter this scenario is for.
-     *
-     * @return chapter number
-     */
-    int getChapter();
+  /**
+   * Get part this scenario is for.
+   *
+   * @return part number
+   */
+  int getBookPart();
 
-    /**
-     * Run the scenario.
-     */
-    void cook();
+  /**
+   * Run the scenario.
+   *
+   * @throws
+   * com.github.javydreamercsw.concurrency.exception.MissingChefException
+   */
+  void cook() throws MissingChefException;
 
-    /**
-     * Add a recipe for this scenario.
-     *
-     * @param r recipe
-     */
-    void addRecipe(Recipe r);
+  /**
+   * Add a recipe for this scenario.
+   *
+   * @param r recipe
+   */
+  void addRecipe(Recipe r);
 
-    /**
-     * Add cook to scenario.
-     *
-     * @param chef cook to add.
-     */
-    public void addCook(Cook chef);
+  /**
+   * Add cook to scenario.
+   *
+   * @param chef cook to add.
+   * @throws
+   * com.github.javydreamercsw.concurrency.exception.MissingChefException
+   */
+  public void addCook(Cook chef) throws MissingChefException;
 
-    /**
-     * Add listener to the scenario
-     *
-     * @param listener
-     */
-    public void addListener(ScenarioListener listener);
+  /**
+   * Add listener to the scenario
+   *
+   * @param listener
+   */
+  public void addListener(ScenarioListener listener);
 
-    /**
-     * Set the sous chef for the scenario.
-     *
-     * @param chef
-     */
-    public abstract void setChef(SousChef chef);
+  /**
+   * Set the sous chef for the scenario.
+   *
+   * @param chef
+   */
+  public void setChef(SousChef chef);
+
+  /**
+   * Return the chef for this scenario
+   *
+   * @return the chef
+   * @throws
+   * com.github.javydreamercsw.concurrency.exception.MissingChefException
+   */
+  public SousChef getChef() throws MissingChefException;
 }
